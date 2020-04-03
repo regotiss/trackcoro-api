@@ -1,0 +1,13 @@
+info:
+  contact: {}
+  license: {}
+paths:
+  /api/healthz:
+    get:
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Check status
+swagger: "2.0"

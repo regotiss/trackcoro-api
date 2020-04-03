@@ -2,24 +2,43 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
+	"trackcoro/docs"
 	"trackcoro/police"
 	"trackcoro/quarantine"
 )
 
 func InitializeRouter() *gin.Engine {
 	router := gin.Default()
-	addHealthCheckRoute(router)
-	addRoutesForQuarantine(router)
-	addRoutesForPolice(router)
+	addSwagger(router)
+	addRoutes(router)
 	return router
 }
 
+func addSwagger(router *gin.Engine) {
+	docs.SwaggerInfo.Title = "Track-Coro API"
+	docs.SwaggerInfo.Description = "This is track corona api server."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+}
+func addRoutes(router *gin.Engine) {
+	addHealthCheckRoute(router)
+	addRoutesForQuarantine(router)
+	addRoutesForPolice(router)
+}
+
+// HealthCheck godoc
+// @Success 200 {string} string	"ok"
+// @Summary Check status
+// @Router /api/healthz [get]
 func addHealthCheckRoute(router *gin.Engine) {
-	router.GET("/api/healthz", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "OK",
-		})
-	})
+	healthCheck := func(c *gin.Context) {
+		c.String(200, "ok")
+	}
+	router.GET("/api/healthz", healthCheck)
 }
 
 func addRoutesForQuarantine(router *gin.Engine) {
