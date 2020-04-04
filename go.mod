@@ -4,6 +4,8 @@ go 1.12
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/aws/aws-lambda-go v0.0.0-20190129190457-dcf76fe64fb6
+	github.com/awslabs/aws-lambda-go-api-proxy v0.6.0
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-openapi/spec v0.19.7 // indirect
 	github.com/go-openapi/swag v0.19.8 // indirect
