@@ -4,6 +4,7 @@ import "github.com/jinzhu/gorm"
 
 type Quarantine struct {
 	gorm.Model
-	Name string
+	Name         string
 	MobileNumber string `gorm:"unique"`
+	Address      QuarantineAddress
 }
