@@ -43,8 +43,9 @@ func (c controller) SaveProfileDetails(ctx *gin.Context) {
 		return
 	}
 	err = c.service.SaveDetails(saveDetailsRequest)
-	if err != nil && err.Error() == NotExists {
+	if err != nil && (err.Error() == NotExists || err.Error() == TimeParseError){
 		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
 	}
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
