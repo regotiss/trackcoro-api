@@ -10,6 +10,7 @@ type Quarantine struct {
 	MobileNumber           string `gorm:"unique"`
 	Name                   string
 	Address                QuarantineAddress
+	TravelHistory          []QuarantineTravelHistory
 	Occupation             string
 	DOB                    time.Time
 	AnyPractitionerConsult bool

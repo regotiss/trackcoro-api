@@ -31,14 +31,18 @@ func (s service) SaveDetails(detailsRequest models.SaveDetailsRequest) error {
 func mapQuarantine(detailRequest models.SaveDetailsRequest) (models.Quarantine, error) {
 	DOB, err := time.Parse(DetailsTimeFormat, detailRequest.DOB)
 	if err != nil {
-		logrus.Error("Could not parse dob time", err)
+		logrus.Error("Could not parse dob ", err)
 		return models.Quarantine{}, errors.New(TimeParseError)
 	}
 	QuarantineStartedFrom, err := time.Parse(DetailsTimeFormat, detailRequest.QuarantineStartedFrom)
 
 	if err != nil {
-		logrus.Error("Could not parse quarantine started from time", err)
+		logrus.Error("Could not parse quarantine started from ", err)
 		return models.Quarantine{}, errors.New(TimeParseError)
+	}
+	history, err := mapTravelHistory(detailRequest.TravelHistory)
+	if err != nil {
+		return models.Quarantine{}, err
 	}
 	return models.Quarantine{
 		MobileNumber:           detailRequest.MobileNumber,
@@ -51,8 +55,28 @@ func mapQuarantine(detailRequest models.SaveDetailsRequest) (models.Quarantine, 
 		QuarantineStartedFrom:  QuarantineStartedFrom,
 		FamilyMembers:          detailRequest.FamilyMembers,
 		SecondaryContactNumber: detailRequest.SecondaryContactNumber,
+		TravelHistory:          history,
 	}, nil
 }
+
+func mapTravelHistory(travelHistoryRequest []models.TravelHistory) ([]models.QuarantineTravelHistory, error) {
+	var travelHistory []models.QuarantineTravelHistory
+	for _, history := range travelHistoryRequest {
+		visitedDate, err := time.Parse(DetailsTimeFormat, history.VisitDate)
+		if err != nil {
+			logrus.Error("Could not parse visited date of travel ", history.PlaceVisited, " error-", err)
+			return nil, errors.New(TimeParseError)
+		}
+		travelHistory = append(travelHistory, models.QuarantineTravelHistory{
+			PlaceVisited:         history.PlaceVisited,
+			VisitDate:            visitedDate,
+			TimeSpentInDays:      history.TimeSpentInDays,
+			ModeOfTransportation: history.ModeOfTransportation,
+		})
+	}
+	return travelHistory, nil
+}
+
 func mapAddress(address models.Address) models.QuarantineAddress {
 	return models.QuarantineAddress{
 		AddressLine1: address.AddressLine1,
