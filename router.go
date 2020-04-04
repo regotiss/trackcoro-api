@@ -6,7 +6,6 @@ import (
 	"github.com/swaggo/gin-swagger"
 	"trackcoro/docs"
 	"trackcoro/police"
-	"trackcoro/quarantine"
 )
 
 func InitializeRouter() *gin.Engine {
@@ -42,10 +41,10 @@ func addHealthCheckRoute(router *gin.Engine) {
 }
 
 func addRoutesForQuarantine(router *gin.Engine) {
-	controller := quarantine.NewController()
 	quarantineGroup := router.Group("/api/v1/quarantine")
 	{
-		quarantineGroup.GET("/save", controller.SaveProfileDetails)
+		quarantineGroup.POST("/verify", QuarantineController.Verify)
+		quarantineGroup.GET("/save", QuarantineController.SaveProfileDetails)
 	}
 }
 
