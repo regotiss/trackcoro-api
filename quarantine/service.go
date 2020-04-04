@@ -1,6 +1,9 @@
 package quarantine
 
 import (
+	"errors"
+	"github.com/sirupsen/logrus"
+	"time"
 	"trackcoro/quarantine/models"
 )
 
@@ -18,11 +21,38 @@ func (s service) Verify(mobileNumber string) (bool, error) {
 }
 
 func (s service) SaveDetails(detailsRequest models.SaveDetailsRequest) error {
-	user := models.Quarantine{Name: detailsRequest.Name, MobileNumber: detailsRequest.MobileNumber,
-		Address: mapAddress(detailsRequest.Address)}
+	user, err := mapQuarantine(detailsRequest)
+	if err != nil {
+		return err
+	}
 	return s.repository.SaveDetails(user)
 }
 
+func mapQuarantine(detailRequest models.SaveDetailsRequest) (models.Quarantine, error) {
+	DOB, err := time.Parse(DetailsTimeFormat, detailRequest.DOB)
+	if err != nil {
+		logrus.Error("Could not parse dob time", err)
+		return models.Quarantine{}, errors.New(TimeParseError)
+	}
+	QuarantineStartedFrom, err := time.Parse(DetailsTimeFormat, detailRequest.QuarantineStartedFrom)
+
+	if err != nil {
+		logrus.Error("Could not parse quarantine started from time", err)
+		return models.Quarantine{}, errors.New(TimeParseError)
+	}
+	return models.Quarantine{
+		MobileNumber:           detailRequest.MobileNumber,
+		Name:                   detailRequest.Name,
+		Address:                mapAddress(detailRequest.Address),
+		Occupation:             detailRequest.Occupation,
+		DOB:                    DOB,
+		AnyPractitionerConsult: detailRequest.AnyPractitionerConsult,
+		NoOfQuarantineDays:     detailRequest.NoOfQuarantineDays,
+		QuarantineStartedFrom:  QuarantineStartedFrom,
+		FamilyMembers:          detailRequest.FamilyMembers,
+		SecondaryContactNumber: detailRequest.SecondaryContactNumber,
+	}, nil
+}
 func mapAddress(address models.Address) models.QuarantineAddress {
 	return models.QuarantineAddress{
 		AddressLine1: address.AddressLine1,
