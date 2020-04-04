@@ -35,7 +35,22 @@ func (c controller) Verify(ctx *gin.Context) {
 }
 
 func (c controller) SaveProfileDetails(ctx *gin.Context) {
-	panic("implement me")
+	var saveDetailsRequest models.SaveDetailsRequest
+	err := ctx.ShouldBindBodyWith(&saveDetailsRequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	err = c.service.SaveDetails(saveDetailsRequest)
+	if err != nil && err.Error() == NotExists {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+	}
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
 
 func NewController(service Service) Controller {

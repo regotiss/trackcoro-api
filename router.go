@@ -44,7 +44,7 @@ func addRoutesForQuarantine(router *gin.Engine) {
 	quarantineGroup := router.Group("/api/v1/quarantine")
 	{
 		quarantineGroup.POST("/verify", QuarantineController.Verify)
-		quarantineGroup.GET("/save", QuarantineController.SaveProfileDetails)
+		quarantineGroup.POST("/saveDetails", QuarantineController.SaveProfileDetails)
 	}
 }
 
