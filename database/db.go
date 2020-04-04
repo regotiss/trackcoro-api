@@ -24,4 +24,5 @@ func ConnectToDB() {
 func MigrateSchema() {
 	DB.AutoMigrate(&models.Quarantine{})
 	DB.AutoMigrate(&models.QuarantineAddress{})
+	DB.AutoMigrate(&models.QuarantineTravelHistory{})
 }
