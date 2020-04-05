@@ -8,15 +8,16 @@ import (
 )
 
 type Service interface {
-	Verify(mobileNumber string) (bool, error)
+	Verify(mobileNumber string) bool
 	SaveDetails(request models.SaveDetailsRequest) error
+	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
 }
 
 type service struct {
 	repository Repository
 }
 
-func (s service) Verify(mobileNumber string) (bool, error) {
+func (s service) Verify(mobileNumber string) bool {
 	return s.repository.isExists(mobileNumber)
 }
 
@@ -26,6 +27,23 @@ func (s service) SaveDetails(detailsRequest models.SaveDetailsRequest) error {
 		return err
 	}
 	return s.repository.SaveDetails(user)
+}
+
+func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error) {
+	days, startedFrom, err := s.repository.GetQuarantineDays(mobileNumber)
+	if err != nil {
+		return models.DaysStatusResponse{}, err
+	}
+	remainingDays := int(days - uint(time.Now().Sub(startedFrom).Hours()/24))
+	if remainingDays < 0 {
+		remainingDays = 0
+	}
+	daysStatus := models.DaysStatusResponse{
+		NoOfQuarantineDays: days,
+		StatedFrom:         startedFrom,
+		RemainingDays:      remainingDays,
+	}
+	return daysStatus, nil
 }
 
 func mapQuarantine(detailRequest models.SaveDetailsRequest) (models.Quarantine, error) {
