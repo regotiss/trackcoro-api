@@ -49,9 +49,10 @@ func addRoutesForQuarantine(router *gin.Engine) {
 	quarantineGroup := router.Group("/api/v1/quarantine")
 	{
 		quarantineGroup.Use(TokenAuthMiddleware())
+		quarantineGroup.GET("", controller.QuarantineController.GetProfileDetails)
 		quarantineGroup.POST("/saveDetails", controller.QuarantineController.SaveProfileDetails)
 		quarantineGroup.GET("/daysStatus", controller.QuarantineController.GetDaysStatus)
-		quarantineGroup.GET("", controller.QuarantineController.GetProfileDetails)
+		quarantineGroup.POST("/uploadPhoto", controller.QuarantineController.UploadPhoto)
 	}
 }
 

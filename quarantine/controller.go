@@ -15,6 +15,7 @@ type Controller interface {
 	SaveProfileDetails(ctx *gin.Context)
 	GetDaysStatus(ctx *gin.Context)
 	GetProfileDetails(ctx *gin.Context)
+	UploadPhoto(ctx *gin.Context)
 }
 
 type controller struct {
@@ -58,6 +59,21 @@ func (c controller) GetDaysStatus(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, daysStatusResponse)
+}
+
+func (c controller) UploadPhoto(ctx *gin.Context) {
+	file, header, err := ctx.Request.FormFile("photo")
+	if err != nil {
+		logrus.Error("Couldn't find form photo", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	err = c.service.UploadPhoto(getMobileNumber(ctx), file, header.Size)
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
 
 func (c controller) GetProfileDetails(ctx *gin.Context) {

@@ -2,10 +2,13 @@ package quarantine
 
 import (
 	"errors"
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"mime/multipart"
 	"time"
 	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
+	"trackcoro/objectstorage"
 	"trackcoro/quarantine/models"
 )
 
@@ -14,10 +17,24 @@ type Service interface {
 	SaveDetails(request models.ProfileDetails) error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
 	GetDetails(mobileNumber string) (models.ProfileDetails, error)
+	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error
 }
 
 type service struct {
 	repository Repository
+}
+
+func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error {
+	photoName := fmt.Sprintf("%s_%s.jpg", mobileNumber, time.Now().Format(constants.FileNameTimeFormat))
+	logrus.Info("file name", photoName)
+	photoContent := make([]byte, photoSize)
+	_, err := photo.Read(photoContent)
+	if err != nil {
+		logrus.Error("Unable to read photo content", err)
+		return err
+	}
+	_, err = objectstorage.PutObject(photoName, photoContent)
+	return err
 }
 
 func (s service) Verify(mobileNumber string) bool {
@@ -103,6 +120,7 @@ func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models.ProfileDetails {
 		SecondaryContactNumber: quarantine.SecondaryContactNumber,
 	}
 }
+
 func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
 	var travelHistory []dbmodels.QuarantineTravelHistory
 	for _, history := range travelHistoryRequest {

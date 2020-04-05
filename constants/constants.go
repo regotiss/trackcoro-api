@@ -6,6 +6,7 @@ var (
 	MobileNumber = "MobileNumber"
 	DBConnectionString = "DB_CONNECTION"
 	DetailsTimeFormat = "2006-01-02"
+	FileNameTimeFormat = "2006-01-02T15:04:05"
 )
 
 var (
