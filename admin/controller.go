@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
-	"trackcoro/token"
+	"trackcoro/utils"
 )
 
 type Controller interface {
@@ -32,7 +32,7 @@ func (c controller) Verify(ctx *gin.Context) {
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
 	response := models2.VerifyResponse{IsRegistered: isRegistered}
 	if response.IsRegistered {
-		addTokenInHeader(ctx, verifyRequest.MobileNumber)
+		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.AdminRole)
 	}
 	ctx.JSON(http.StatusOK, response)
 }
@@ -69,17 +69,6 @@ func (c controller) GetSOs(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, SOs)
-}
-
-func addTokenInHeader(ctx *gin.Context, mobileNumber string) {
-	tokenBody := token.UserInfo{MobileNumber: mobileNumber, Role: constants.AdminRole}
-	generatedToken, generatedTime, err := token.GenerateToken(tokenBody)
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.Header("Token", generatedToken)
-	ctx.Header("Generated-At", generatedTime.String())
 }
 
 func getMobileNumber(ctx *gin.Context) string {

@@ -8,7 +8,6 @@ import (
 	"trackcoro/constants"
 	"trackcoro/controller"
 	"trackcoro/docs"
-	"trackcoro/police"
 	"trackcoro/token"
 )
 
@@ -69,10 +68,9 @@ func addRoutesForQuarantine(router *gin.Engine) {
 }
 
 func addRoutesForSO(router *gin.Engine) {
-	policeController := police.NewController()
-	quarantineGroup := router.Group("/api/v1/police")
+	quarantineGroup := router.Group("/api/v1/so")
 	{
-		quarantineGroup.GET("/save", policeController.SaveProfileDetails)
+		quarantineGroup.POST("/verify", controller.SOController.Verify)
 	}
 }
 
