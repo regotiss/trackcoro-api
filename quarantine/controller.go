@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"trackcoro/constants"
+	models2 "trackcoro/models"
 	"trackcoro/quarantine/models"
 	"trackcoro/token"
 )
@@ -23,7 +24,7 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	var verifyRequest models.VerifyRequest
+	var verifyRequest models2.VerifyRequest
 	err := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)
@@ -31,7 +32,7 @@ func (c controller) Verify(ctx *gin.Context) {
 		return
 	}
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-	response := models.VerifyResponse{IsRegistered: isRegistered}
+	response := models2.VerifyResponse{IsRegistered: isRegistered}
 	if response.IsRegistered {
 		addTokenInHeader(ctx, verifyRequest.MobileNumber)
 	}

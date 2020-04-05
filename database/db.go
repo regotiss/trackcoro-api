@@ -27,4 +27,5 @@ func MigrateSchema() {
 	DB.AutoMigrate(&models.QuarantineTravelHistory{})
 
 	DB.AutoMigrate(&models.Admin{})
+	DB.AutoMigrate(&models.SupervisingOfficer{})
 }

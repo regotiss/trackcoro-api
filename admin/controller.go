@@ -5,14 +5,16 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"trackcoro/admin/models"
 	"trackcoro/constants"
-	"trackcoro/quarantine/models"
+	models2 "trackcoro/models"
 	"trackcoro/token"
 )
 
 type Controller interface {
 	Verify(ctx *gin.Context)
 	Add(ctx *gin.Context)
+	AddSO(ctx *gin.Context)
 }
 
 type controller struct {
@@ -20,7 +22,7 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	var verifyRequest models.VerifyRequest
+	var verifyRequest models2.VerifyRequest
 	err := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)
@@ -28,7 +30,7 @@ func (c controller) Verify(ctx *gin.Context) {
 		return
 	}
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-	response := models.VerifyResponse{IsRegistered: isRegistered}
+	response := models2.VerifyResponse{IsRegistered: isRegistered}
 	if response.IsRegistered {
 		addTokenInHeader(ctx, verifyRequest.MobileNumber)
 	}
@@ -37,6 +39,22 @@ func (c controller) Verify(ctx *gin.Context) {
 
 func (c controller) Add(ctx *gin.Context) {
 	err := c.service.Add()
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+
+func (c controller) AddSO(ctx *gin.Context) {
+	var addSORequest models.AddSORequest
+	err := ctx.ShouldBindBodyWith(&addSORequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	err = c.service.AddSO(getMobileNumber(ctx), addSORequest)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -54,6 +72,11 @@ func addTokenInHeader(ctx *gin.Context, mobileNumber string) {
 	}
 	ctx.Header("Token", generatedToken)
 	ctx.Header("Generated-At", generatedTime.String())
+}
+
+func getMobileNumber(ctx *gin.Context) string {
+	mobileNumber, _ := ctx.Get(constants.MobileNumber)
+	return mobileNumber.(string)
 }
 
 func NewController(service Service) Controller {

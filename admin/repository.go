@@ -11,6 +11,7 @@ import (
 type Repository interface {
 	IsExists(mobileNumber string) bool
 	Add(admin models.Admin) error
+	AddSO(adminMobileNumber string, so models.SupervisingOfficer) error
 }
 
 type repository struct {
@@ -21,13 +22,20 @@ func (r repository) Add(admin models.Admin) error {
 	existingAdmin, err := r.getBy(admin.MobileNumber)
 	if err != nil {
 		logrus.Info("Adding admin")
-		r.db.Create(&admin)
-		return err
+		return r.db.Create(&admin).Error
 	}
 	logrus.Info("Admin already exists")
 	admin.ID = existingAdmin.ID
-	err = r.db.Save(admin).Error
-	return nil
+	return r.db.Save(&admin).Error
+}
+
+func (r repository) AddSO(mobileNumber string, so models.SupervisingOfficer) error {
+	existingAdmin, err := r.getBy(mobileNumber)
+	if err != nil {
+		return err
+	}
+	so.AdminID = existingAdmin.ID
+	return r.db.Save(&so).Error
 }
 
 func (r repository) IsExists(mobileNumber string) bool {

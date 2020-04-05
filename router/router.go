@@ -46,10 +46,12 @@ func addHealthCheckRoute(router *gin.Engine) {
 }
 
 func addRoutesForAdmin(router *gin.Engine) {
+	router.POST("/api/v1/admin/verify", controller.AdminController.Verify)
+	router.POST("/api/v1/admin/add", controller.AdminController.Add)
 	adminGroup := router.Group("/api/v1/admin")
 	{
-		adminGroup.POST("/verify", controller.AdminController.Verify)
-		adminGroup.POST("/add", controller.AdminController.Add)
+		adminGroup.Use(TokenAuthMiddleware(constants.AdminRole))
+		adminGroup.POST("/addSO", controller.AdminController.AddSO)
 	}
 }
 
