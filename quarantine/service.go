@@ -11,6 +11,7 @@ import (
 	models2 "trackcoro/models"
 	"trackcoro/objectstorage"
 	"trackcoro/quarantine/models"
+	"trackcoro/utils"
 )
 
 type Service interface {
@@ -108,19 +109,8 @@ func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quaran
 }
 
 func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models2.QuarantineDetails {
-	return models2.QuarantineDetails{
-		MobileNumber:           quarantine.MobileNumber,
-		Name:                   quarantine.Name,
-		Address:                mapFromDBAddress(quarantine.Address),
-		Occupation:             quarantine.Occupation,
-		DOB:                    quarantine.DOB.String(),
-		TravelHistory:          mapFromDBTravelHistory(quarantine.TravelHistory),
-		AnyPractitionerConsult: quarantine.AnyPractitionerConsult,
-		NoOfQuarantineDays:     quarantine.NoOfQuarantineDays,
-		QuarantineStartedFrom:  quarantine.QuarantineStartedFrom.String(),
-		FamilyMembers:          quarantine.FamilyMembers,
-		SecondaryContactNumber: quarantine.SecondaryContactNumber,
-	}
+	details := utils.GetMappedQuarantine(quarantine)
+	return details
 }
 
 func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
@@ -141,18 +131,6 @@ func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmode
 	return travelHistory, nil
 }
 
-func mapFromDBTravelHistory(quarantineTravelHistory []dbmodels.QuarantineTravelHistory) []models.TravelHistory {
-	var travelHistory []models.TravelHistory
-	for _, history := range quarantineTravelHistory {
-		travelHistory = append(travelHistory, models.TravelHistory{
-			PlaceVisited:         history.PlaceVisited,
-			VisitDate:            history.VisitDate.String(),
-			TimeSpentInDays:      history.TimeSpentInDays,
-			ModeOfTransportation: history.ModeOfTransportation,
-		})
-	}
-	return travelHistory
-}
 
 func mapToDBAddress(address models2.Address) dbmodels.QuarantineAddress {
 	return dbmodels.QuarantineAddress{
@@ -170,23 +148,6 @@ func mapToDBAddress(address models2.Address) dbmodels.QuarantineAddress {
 	}
 }
 
-func mapFromDBAddress(address dbmodels.QuarantineAddress) models2.Address {
-	return models2.Address{
-		AddressLine1: address.AddressLine1,
-		AddressLine2: address.AddressLine2,
-		AddressLine3: address.AddressLine3,
-		Locality:     address.Locality,
-		City:         address.City,
-		District:     address.District,
-		State:        address.State,
-		Country:      address.Country,
-		PinCode:      address.PinCode,
-		Coordinates: models2.Coordinates{
-			Latitude:  address.Latitude,
-			Longitude: address.Longitude,
-		},
-	}
-}
 
 func NewService(repository Repository) Service {
 	return service{repository}

@@ -55,6 +55,16 @@ func addRoutesForAdmin(router *gin.Engine) {
 	}
 }
 
+func addRoutesForSO(router *gin.Engine) {
+	router.POST("/api/v1/so/verify", controller.SOController.Verify)
+	quarantineGroup := router.Group("/api/v1/so")
+	{
+		quarantineGroup.Use(TokenAuthMiddleware(constants.SORole))
+		quarantineGroup.POST("/addQuarantine", controller.SOController.AddQuarantine)
+		quarantineGroup.GET("/quarantines", controller.SOController.GetQuarantines)
+	}
+}
+
 func addRoutesForQuarantine(router *gin.Engine) {
 	router.POST("/api/v1/quarantine/verify", controller.QuarantineController.Verify)
 	quarantineGroup := router.Group("/api/v1/quarantine")
@@ -64,15 +74,6 @@ func addRoutesForQuarantine(router *gin.Engine) {
 		quarantineGroup.POST("/saveDetails", controller.QuarantineController.SaveProfileDetails)
 		quarantineGroup.GET("/daysStatus", controller.QuarantineController.GetDaysStatus)
 		quarantineGroup.POST("/uploadPhoto", controller.QuarantineController.UploadPhoto)
-	}
-}
-
-func addRoutesForSO(router *gin.Engine) {
-	router.POST("/api/v1/so/verify", controller.SOController.Verify)
-	quarantineGroup := router.Group("/api/v1/so")
-	{
-		quarantineGroup.Use(TokenAuthMiddleware(constants.SORole))
-		quarantineGroup.POST("/addQuarantine", controller.SOController.AddQuarantine)
 	}
 }
 

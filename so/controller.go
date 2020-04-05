@@ -13,6 +13,7 @@ import (
 type Controller interface {
 	Verify(ctx *gin.Context)
 	AddQuarantine(ctx *gin.Context)
+	GetQuarantines(ctx *gin.Context)
 }
 
 type controller struct {
@@ -49,6 +50,15 @@ func (c controller) AddQuarantine(ctx *gin.Context) {
 		return
 	}
 	ctx.Status(http.StatusOK)
+}
+
+func (c controller) GetQuarantines(ctx *gin.Context) {
+	quarantines, err := c.service.GetQuarantines(utils.GetMobileNumber(ctx))
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.JSON(http.StatusOK, quarantines)
 }
 
 func NewController(service Service) Controller {

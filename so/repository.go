@@ -11,6 +11,7 @@ import (
 type Repository interface {
 	IsExists(mobileNumber string) bool
 	AddQuarantine(mobileNumber string, quarantine models.Quarantine) error
+	GetQuarantines(mobileNumber string) ([]models.Quarantine, error)
 }
 
 type repository struct {
@@ -34,6 +35,17 @@ func (r repository) AddQuarantine(mobileNumber string, quarantine models.Quarant
 	quarantine.SupervisingOfficerID = existingSO.ID
 	return r.db.Save(&quarantine).Error
 }
+
+func (r repository) GetQuarantines(mobileNumber string) ([]models.Quarantine, error) {
+	existingSO, err := r.getBy(mobileNumber)
+	if err != nil {
+		return nil, err
+	}
+	var Quarantines []models.Quarantine
+	err = r.db.Model(&existingSO).Related(&Quarantines).Error
+	return Quarantines, err
+}
+
 
 func (r repository) getBy(mobileNumber string) (models.SupervisingOfficer, error) {
 	var user models.SupervisingOfficer
