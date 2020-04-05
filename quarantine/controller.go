@@ -12,6 +12,7 @@ type Controller interface {
 	Verify(ctx *gin.Context)
 	SaveProfileDetails(ctx *gin.Context)
 	GetDaysStatus(ctx *gin.Context)
+	GetProfileDetails(ctx *gin.Context)
 }
 
 type controller struct {
@@ -32,7 +33,7 @@ func (c controller) Verify(ctx *gin.Context) {
 }
 
 func (c controller) SaveProfileDetails(ctx *gin.Context) {
-	var saveDetailsRequest models.SaveDetailsRequest
+	var saveDetailsRequest models.ProfileDetails
 	err := ctx.ShouldBindBodyWith(&saveDetailsRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)
@@ -59,6 +60,24 @@ func (c controller) GetDaysStatus(ctx *gin.Context) {
 	}
 	ctx.JSON(status, daysStatusResponse)
 }
+
+func (c controller) GetProfileDetails(ctx *gin.Context) {
+	var getProfileDetailsRequest models.VerifyRequest
+	err := ctx.ShouldBindBodyWith(&getProfileDetailsRequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	profileDetails, err := c.service.GetDetails(getProfileDetailsRequest.MobileNumber)
+	status := getStatusCode(err)
+	if status != http.StatusOK {
+		ctx.AbortWithStatus(status)
+		return
+	}
+	ctx.JSON(status, profileDetails)
+}
+
 func getStatusCode(err error) int {
 	if err != nil && err.Error() == NotExists {
 		return http.StatusUnauthorized

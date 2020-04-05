@@ -1,6 +1,6 @@
 package models
 
 type Coordinates struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
+	Latitude  string `json:"latitude" binding:"required"`
+	Longitude string `json:"longitude" binding:"required"`
 }

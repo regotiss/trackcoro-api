@@ -10,5 +10,5 @@ type Address struct {
 	State        string      `json:"state" binding:"required"`
 	Country      string      `json:"country" binding:"required"`
 	PinCode      string      `json:"pincode" binding:"required"`
-	Coordinates  Coordinates `json:"co_ordinates"`
+	Coordinates  Coordinates `json:"coordinates" binding:"required"`
 }

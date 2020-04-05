@@ -5,8 +5,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sirupsen/logrus"
 	"os"
+	"trackcoro/database/models"
 	"trackcoro/quarantine"
-	"trackcoro/quarantine/models"
 )
 
 var DB *gorm.DB
