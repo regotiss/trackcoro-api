@@ -4,15 +4,16 @@ import (
 	"errors"
 	"github.com/sirupsen/logrus"
 	"os"
-	"trackcoro/admin/models"
 	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
+	"trackcoro/models"
 )
 
 type Service interface {
 	Verify(mobileNumber string) bool
 	Add() error
-	AddSO(adminMobileNumber string, soRequest models.AddSORequest) error
+	AddSO(adminMobileNumber string, soRequest models.SODetails) error
+	GetSOs(adminMobileNumber string) ([]models.SODetails, error)
 }
 
 type service struct {
@@ -32,11 +33,23 @@ func (s service) Add() error {
 	return s.repository.Add(dbmodels.Admin{MobileNumber:mobileNumber})
 }
 
-func (s service) AddSO(adminMobileNumber string, soRequest models.AddSORequest) error {
-	return s.repository.AddSO(adminMobileNumber, mapToSO(soRequest))
+func (s service) AddSO(adminMobileNumber string, soRequest models.SODetails) error {
+	return s.repository.AddSO(adminMobileNumber, mapToDbSO(soRequest))
 }
 
-func mapToSO(soRequest models.AddSORequest) dbmodels.SupervisingOfficer {
+func (s service) GetSOs(adminMobileNumber string) ([]models.SODetails, error) {
+	SOsFromDB, err := s.repository.GetSOs(adminMobileNumber)
+	if err != nil {
+		return nil, err
+	}
+	var SOs []models.SODetails
+	for _, SO := range SOsFromDB {
+		SOs = append(SOs, mapFromDbSO(SO))
+	}
+	return SOs, nil
+}
+
+func mapToDbSO(soRequest models.SODetails) dbmodels.SupervisingOfficer {
 	return dbmodels.SupervisingOfficer{
 		MobileNumber:         soRequest.MobileNumber,
 		Name:                 soRequest.Name,
@@ -45,6 +58,17 @@ func mapToSO(soRequest models.AddSORequest) dbmodels.SupervisingOfficer {
 		PoliceStationAddress: soRequest.PoliceStationAddress,
 	}
 }
+
+func mapFromDbSO(SO dbmodels.SupervisingOfficer) models.SODetails {
+	return models.SODetails{
+		MobileNumber:         SO.MobileNumber,
+		Name:                 SO.Name,
+		BadgeId:              SO.BadgeId,
+		Designation:          SO.Designation,
+		PoliceStationAddress: SO.PoliceStationAddress,
+	}
+}
+
 func NewService(repository Repository) Service {
 	return service{repository}
 }

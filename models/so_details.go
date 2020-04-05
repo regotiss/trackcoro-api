@@ -1,6 +1,6 @@
 package models
 
-type AddSORequest struct {
+type SODetails struct {
 	MobileNumber         string `json:"mobile_number" binding:"required,len=10"`
 	Name                 string `json:"name" binding:"required"`
 	BadgeId              string `json:"badge_id" binding:"required"`

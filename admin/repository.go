@@ -12,10 +12,19 @@ type Repository interface {
 	IsExists(mobileNumber string) bool
 	Add(admin models.Admin) error
 	AddSO(adminMobileNumber string, so models.SupervisingOfficer) error
+	GetSOs(adminMobileNumber string) ([]models.SupervisingOfficer, error)
 }
 
 type repository struct {
 	db *gorm.DB
+}
+
+func (r repository) IsExists(mobileNumber string) bool {
+	user, err := r.getBy(mobileNumber)
+	if err != nil {
+		return false
+	}
+	return user.MobileNumber == mobileNumber
 }
 
 func (r repository) Add(admin models.Admin) error {
@@ -38,12 +47,14 @@ func (r repository) AddSO(mobileNumber string, so models.SupervisingOfficer) err
 	return r.db.Save(&so).Error
 }
 
-func (r repository) IsExists(mobileNumber string) bool {
-	user, err := r.getBy(mobileNumber)
+func (r repository) GetSOs(adminMobileNumber string) ([]models.SupervisingOfficer, error) {
+	existingAdmin, err := r.getBy(adminMobileNumber)
 	if err != nil {
-		return false
+		return nil, err
 	}
-	return user.MobileNumber == mobileNumber
+	var SOs []models.SupervisingOfficer
+	err = r.db.Model(&existingAdmin).Related(&SOs).Error
+	return SOs, err
 }
 
 func (r repository) getBy(mobileNumber string) (models.Admin, error) {
