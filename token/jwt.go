@@ -15,19 +15,19 @@ var (
 	jwtKey []byte = []byte(secretKey)
 )
 
-type JWTBody struct {
+type UserInfo struct {
 	MobileNumber string `json:"mobile_number"`
 }
 
 type Claims struct {
-	JWTBody
+	UserInfo
 	jwt.StandardClaims
 }
 
-func GenerateToken(body JWTBody) (string, time.Time, error) {
+func GenerateToken(userInfo UserInfo) (string, time.Time, error) {
 	expirationTime := time.Now().Add(10 * time.Second)
 	claims := &Claims{
-		JWTBody: body,
+		UserInfo:       userInfo,
 		StandardClaims: jwt.StandardClaims{},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -69,7 +69,7 @@ func RefreshToken(token string) (string, time.Time, error) {
 		logrus.Error("RefreshToken: ", err)
 		return "", time.Time{}, fmt.Errorf("current token is not expired")
 	}
-	newToken, expiryTime, err := GenerateToken(claims.JWTBody)
+	newToken, expiryTime, err := GenerateToken(claims.UserInfo)
 	if err != nil {
 		logrus.Error("RefreshToken: ", err)
 		return "", time.Time{}, fmt.Errorf("could not get token")

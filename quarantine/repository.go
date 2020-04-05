@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"time"
+	"trackcoro/constants"
 	"trackcoro/database/models"
 )
 
@@ -70,7 +71,7 @@ func (r repository) getBy(mobileNumber string) (models.Quarantine, error) {
 	err := r.db.Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error
 	if err != nil {
 		logrus.Error("Could not check mobile number in db ", err)
-		return models.Quarantine{}, errors.New(NotExists)
+		return models.Quarantine{}, errors.New(constants.NotExists)
 	}
 	return user, nil
 }

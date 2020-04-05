@@ -5,15 +5,15 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sirupsen/logrus"
 	"os"
+	"trackcoro/constants"
 	"trackcoro/database/models"
-	"trackcoro/quarantine"
 )
 
 var DB *gorm.DB
 
 func ConnectToDB() {
 	logrus.Info("Connecting to DB")
-	db, err := gorm.Open("postgres", os.Getenv(quarantine.DBConnectionString))
+	db, err := gorm.Open("postgres", os.Getenv(constants.DBConnectionString))
 	if err != nil {
 		logrus.Panic("Could not connect to db", err)
 	}

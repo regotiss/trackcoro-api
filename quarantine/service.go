@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/sirupsen/logrus"
 	"time"
+	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
 	"trackcoro/quarantine/models"
 )
@@ -57,16 +58,16 @@ func (s service) GetDetails(mobileNumber string) (models.ProfileDetails, error) 
 }
 
 func mapToDBQuarantine(detailRequest models.ProfileDetails) (dbmodels.Quarantine, error) {
-	DOB, err := time.Parse(DetailsTimeFormat, detailRequest.DOB)
+	DOB, err := time.Parse(constants.DetailsTimeFormat, detailRequest.DOB)
 	if err != nil {
 		logrus.Error("Could not parse dob ", err)
-		return dbmodels.Quarantine{}, errors.New(TimeParseError)
+		return dbmodels.Quarantine{}, errors.New(constants.TimeParseError)
 	}
-	QuarantineStartedFrom, err := time.Parse(DetailsTimeFormat, detailRequest.QuarantineStartedFrom)
+	QuarantineStartedFrom, err := time.Parse(constants.DetailsTimeFormat, detailRequest.QuarantineStartedFrom)
 
 	if err != nil {
 		logrus.Error("Could not parse quarantine started from ", err)
-		return dbmodels.Quarantine{}, errors.New(TimeParseError)
+		return dbmodels.Quarantine{}, errors.New(constants.TimeParseError)
 	}
 	history, err := mapToDBTravelHistory(detailRequest.TravelHistory)
 	if err != nil {
@@ -105,10 +106,10 @@ func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models.ProfileDetails {
 func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
 	var travelHistory []dbmodels.QuarantineTravelHistory
 	for _, history := range travelHistoryRequest {
-		visitedDate, err := time.Parse(DetailsTimeFormat, history.VisitDate)
+		visitedDate, err := time.Parse(constants.DetailsTimeFormat, history.VisitDate)
 		if err != nil {
 			logrus.Error("Could not parse visited date of travel ", history.PlaceVisited, " error-", err)
-			return nil, errors.New(TimeParseError)
+			return nil, errors.New(constants.TimeParseError)
 		}
 		travelHistory = append(travelHistory, dbmodels.QuarantineTravelHistory{
 			PlaceVisited:         history.PlaceVisited,

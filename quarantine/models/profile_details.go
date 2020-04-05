@@ -1,7 +1,7 @@
 package models
 
 type ProfileDetails struct {
-	MobileNumber           string          `json:"mobile_number" binding:"required"`
+	MobileNumber           string          `json:"mobile_number"`
 	Name                   string          `json:"name" binding:"required"`
 	Address                Address         `json:"address" binding:"required"`
 	Occupation             string          `json:"occupation" binding:"required"`

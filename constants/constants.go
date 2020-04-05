@@ -1,6 +1,9 @@
-package quarantine
+package constants
 
 var (
+	Empty = ""
+	Authorization = "Authorization"
+	MobileNumber = "MobileNumber"
 	DBConnectionString = "DB_CONNECTION"
 	DetailsTimeFormat = "2006-01-02"
 )

@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"trackcoro/constants"
 	"trackcoro/quarantine/models"
+	"trackcoro/token"
 )
 
 type Controller interface {
@@ -29,6 +31,9 @@ func (c controller) Verify(ctx *gin.Context) {
 	}
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
 	response := models.VerifyResponse{IsRegistered: isRegistered}
+	if response.IsRegistered {
+		addTokenInHeader(ctx, verifyRequest.MobileNumber)
+	}
 	ctx.JSON(http.StatusOK, response)
 }
 
@@ -40,19 +45,13 @@ func (c controller) SaveProfileDetails(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	saveDetailsRequest.MobileNumber = getMobileNumber(ctx)
 	err = c.service.SaveDetails(saveDetailsRequest)
 	ctx.Status(getStatusCode(err))
 }
 
 func (c controller) GetDaysStatus(ctx *gin.Context) {
-	var daysStatusRequest models.VerifyRequest
-	err := ctx.ShouldBindBodyWith(&daysStatusRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	daysStatusResponse, err := c.service.GetDaysStatus(daysStatusRequest.MobileNumber)
+	daysStatusResponse, err := c.service.GetDaysStatus(getMobileNumber(ctx))
 	status := getStatusCode(err)
 	if status != http.StatusOK {
 		ctx.AbortWithStatus(status)
@@ -62,14 +61,7 @@ func (c controller) GetDaysStatus(ctx *gin.Context) {
 }
 
 func (c controller) GetProfileDetails(ctx *gin.Context) {
-	var getProfileDetailsRequest models.VerifyRequest
-	err := ctx.ShouldBindBodyWith(&getProfileDetailsRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	profileDetails, err := c.service.GetDetails(getProfileDetailsRequest.MobileNumber)
+	profileDetails, err := c.service.GetDetails(getMobileNumber(ctx))
 	status := getStatusCode(err)
 	if status != http.StatusOK {
 		ctx.AbortWithStatus(status)
@@ -78,11 +70,21 @@ func (c controller) GetProfileDetails(ctx *gin.Context) {
 	ctx.JSON(status, profileDetails)
 }
 
+func addTokenInHeader(ctx *gin.Context, mobileNumber string) {
+	tokenBody := token.UserInfo{MobileNumber: mobileNumber}
+	generatedToken, generatedTime, err := token.GenerateToken(tokenBody)
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Header("Token", generatedToken)
+	ctx.Header("Generated-At", generatedTime.String())
+}
 func getStatusCode(err error) int {
-	if err != nil && err.Error() == NotExists {
+	if err != nil && err.Error() == constants.NotExists {
 		return http.StatusUnauthorized
 	}
-	if err != nil && err.Error() == TimeParseError {
+	if err != nil && err.Error() == constants.TimeParseError {
 		return http.StatusBadRequest
 	}
 	if err != nil {
@@ -91,6 +93,10 @@ func getStatusCode(err error) int {
 	return http.StatusOK
 }
 
+func getMobileNumber(ctx *gin.Context) string {
+	mobileNumber, _ := ctx.Get(constants.MobileNumber)
+	return mobileNumber.(string)
+}
 func NewController(service Service) Controller {
 	return controller{service}
 }
