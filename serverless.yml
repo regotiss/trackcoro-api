@@ -62,7 +62,8 @@ package:
 
 functions:
   trackcoroapi:
-    handler: cmd/lambda/main
+    name: track-coro-api-handler
+    handler: bin/lambda
     events:
       - http:
           path: /{proxy+}

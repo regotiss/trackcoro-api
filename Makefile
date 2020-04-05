@@ -1,8 +1,8 @@
 .PHONY: build clean deploy
 
 build:
-	env GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-s -w" -o cmd/lambda/lambda bin/lambda
-	env go build -ldflags="-s -w" -o cmd/server/server bin/server
+	env GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-s -w" -o bin/lambda cmd/lambda/main.go 	
+	env go build -ldflags="-s -w" -o bin/server cmd/server/main.go
 
 clean:
 	rm -rf ./bin
