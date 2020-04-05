@@ -58,7 +58,7 @@ package:
   exclude:
     - ./**
   include:
-    - ./cmd/lambda/**
+    - ./bin/**
 
 functions:
   trackcoroapi:
