@@ -12,9 +12,6 @@
 # Happy Coding!
 
 service: trackcoro-api
-# app and org for use with dashboard.serverless.com
-#app: your-app-name
-#org: your-org-name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -24,12 +21,22 @@ frameworkVersion: '>=1.28.0 <2.0.0'
 provider:
   name: aws
   runtime: go1.x
-
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
+  region: ${opt:region, 'ap-south-1'}
+  stage: test
 
 # you can add statements to the Lambda function's IAM Role here
+  environment:
+    DB_CONNECTION: "host={DB-URL} port=5432 user={DB-USER} password={DB-PASSWORD} dbname={DB-NAME} sslmode=require"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ec2:CreateNetworkInterface"
+        - "ec2:DescribeNetworkInterfaces"
+        - "ec2:DeleteNetworkInterface"
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:PutLogEvents"
+      Resource: "*"
 #  iamRoleStatements:
 #    - Effect: "Allow"
 #      Action:
@@ -46,14 +53,12 @@ provider:
 #            - "/*"
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
 
 package:
   exclude:
     - ./**
   include:
-    - ./bin/**
+    - ./cmd/lambda/**
 
 functions:
   trackcoroapi:
@@ -63,6 +68,7 @@ functions:
           path: /{proxy+}
           method: any
           cors: true
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
