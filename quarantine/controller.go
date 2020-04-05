@@ -11,6 +11,7 @@ import (
 type Controller interface {
 	Verify(ctx *gin.Context)
 	SaveProfileDetails(ctx *gin.Context)
+	GetDaysStatus(ctx *gin.Context)
 }
 
 type controller struct {
@@ -25,12 +26,8 @@ func (c controller) Verify(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	isRegistered, err := c.service.Verify(verifyRequest.MobileNumber)
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	response := models.VerifyResponse{IsRegistered:isRegistered}
+	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
+	response := models.VerifyResponse{IsRegistered: isRegistered}
 	ctx.JSON(http.StatusOK, response)
 }
 
@@ -43,15 +40,36 @@ func (c controller) SaveProfileDetails(ctx *gin.Context) {
 		return
 	}
 	err = c.service.SaveDetails(saveDetailsRequest)
-	if err != nil && (err.Error() == NotExists || err.Error() == TimeParseError){
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+	ctx.Status(getStatusCode(err))
+}
+
+func (c controller) GetDaysStatus(ctx *gin.Context) {
+	var daysStatusRequest models.VerifyRequest
+	err := ctx.ShouldBindBodyWith(&daysStatusRequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
+	}
+	daysStatusResponse, err := c.service.GetDaysStatus(daysStatusRequest.MobileNumber)
+	status := getStatusCode(err)
+	if status != http.StatusOK {
+		ctx.AbortWithStatus(status)
+		return
+	}
+	ctx.JSON(status, daysStatusResponse)
+}
+func getStatusCode(err error) int {
+	if err != nil && err.Error() == NotExists {
+		return http.StatusUnauthorized
+	}
+	if err != nil && err.Error() == TimeParseError {
+		return http.StatusBadRequest
 	}
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError
 	}
-	ctx.Status(http.StatusOK)
+	return http.StatusOK
 }
 
 func NewController(service Service) Controller {

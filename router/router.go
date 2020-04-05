@@ -46,13 +46,14 @@ func addRoutesForQuarantine(router *gin.Engine) {
 	{
 		quarantineGroup.POST("/verify", controller.QuarantineController.Verify)
 		quarantineGroup.POST("/saveDetails", controller.QuarantineController.SaveProfileDetails)
+		quarantineGroup.POST("/daysStatus", controller.QuarantineController.GetDaysStatus)
 	}
 }
 
 func addRoutesForPolice(router *gin.Engine) {
-	controller := police.NewController()
+	policeController := police.NewController()
 	quarantineGroup := router.Group("/api/v1/police")
 	{
-		quarantineGroup.GET("/save", controller.SaveProfileDetails)
+		quarantineGroup.GET("/save", policeController.SaveProfileDetails)
 	}
 }
