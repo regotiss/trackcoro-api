@@ -12,6 +12,7 @@ import (
 
 type Controller interface {
 	Verify(ctx *gin.Context)
+	AddQuarantine(ctx *gin.Context)
 }
 
 type controller struct {
@@ -32,6 +33,22 @@ func (c controller) Verify(ctx *gin.Context) {
 		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.SORole)
 	}
 	ctx.JSON(http.StatusOK, response)
+}
+
+func (c controller) AddQuarantine(ctx *gin.Context) {
+	var addQuarantineRequest models2.VerifyRequest
+	err := ctx.ShouldBindBodyWith(&addQuarantineRequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	err = c.service.AddQuarantine(utils.GetMobileNumber(ctx), addQuarantineRequest.MobileNumber)
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
 
 func NewController(service Service) Controller {

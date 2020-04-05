@@ -68,9 +68,11 @@ func addRoutesForQuarantine(router *gin.Engine) {
 }
 
 func addRoutesForSO(router *gin.Engine) {
+	router.POST("/api/v1/so/verify", controller.SOController.Verify)
 	quarantineGroup := router.Group("/api/v1/so")
 	{
-		quarantineGroup.POST("/verify", controller.SOController.Verify)
+		quarantineGroup.Use(TokenAuthMiddleware(constants.SORole))
+		quarantineGroup.POST("/addQuarantine", controller.SOController.AddQuarantine)
 	}
 }
 

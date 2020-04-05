@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
-	"trackcoro/quarantine/models"
 	"trackcoro/utils"
 )
 
@@ -40,7 +39,7 @@ func (c controller) Verify(ctx *gin.Context) {
 }
 
 func (c controller) SaveProfileDetails(ctx *gin.Context) {
-	var saveDetailsRequest models.ProfileDetails
+	var saveDetailsRequest models2.QuarantineDetails
 	err := ctx.ShouldBindBodyWith(&saveDetailsRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)

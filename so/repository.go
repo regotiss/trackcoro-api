@@ -10,6 +10,7 @@ import (
 
 type Repository interface {
 	IsExists(mobileNumber string) bool
+	AddQuarantine(mobileNumber string, quarantine models.Quarantine) error
 }
 
 type repository struct {
@@ -23,6 +24,15 @@ func (r repository) IsExists(mobileNumber string) bool {
 		return false
 	}
 	return user.MobileNumber == mobileNumber
+}
+
+func (r repository) AddQuarantine(mobileNumber string, quarantine models.Quarantine) error {
+	existingSO, err := r.getBy(mobileNumber)
+	if err != nil {
+		return err
+	}
+	quarantine.SupervisingOfficerID = existingSO.ID
+	return r.db.Save(&quarantine).Error
 }
 
 func (r repository) getBy(mobileNumber string) (models.SupervisingOfficer, error) {

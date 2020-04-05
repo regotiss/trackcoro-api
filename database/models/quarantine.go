@@ -19,4 +19,5 @@ type Quarantine struct {
 	FamilyMembers          uint
 	SecondaryContactNumber string
 	DeviceTokenId          string
+	SupervisingOfficerID   uint
 }

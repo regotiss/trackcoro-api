@@ -54,7 +54,7 @@ func (c controller) AddSO(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = c.service.AddSO(getMobileNumber(ctx), addSORequest)
+	err = c.service.AddSO(utils.GetMobileNumber(ctx), addSORequest)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -63,17 +63,12 @@ func (c controller) AddSO(ctx *gin.Context) {
 }
 
 func (c controller) GetSOs(ctx *gin.Context) {
-	SOs, err := c.service.GetSOs(getMobileNumber(ctx))
+	SOs, err := c.service.GetSOs(utils.GetMobileNumber(ctx))
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	ctx.JSON(http.StatusOK, SOs)
-}
-
-func getMobileNumber(ctx *gin.Context) string {
-	mobileNumber, _ := ctx.Get(constants.MobileNumber)
-	return mobileNumber.(string)
 }
 
 func NewController(service Service) Controller {

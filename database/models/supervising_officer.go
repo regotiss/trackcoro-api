@@ -10,4 +10,5 @@ type SupervisingOfficer struct {
 	Designation          string
 	PoliceStationAddress string
 	AdminID              uint
+	Quarantines          []Quarantine
 }

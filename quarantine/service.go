@@ -8,15 +8,16 @@ import (
 	"time"
 	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
+	models2 "trackcoro/models"
 	"trackcoro/objectstorage"
 	"trackcoro/quarantine/models"
 )
 
 type Service interface {
 	Verify(mobileNumber string) bool
-	SaveDetails(request models.ProfileDetails) error
+	SaveDetails(request models2.QuarantineDetails) error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
-	GetDetails(mobileNumber string) (models.ProfileDetails, error)
+	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error
 }
 
@@ -41,7 +42,7 @@ func (s service) Verify(mobileNumber string) bool {
 	return s.repository.IsExists(mobileNumber)
 }
 
-func (s service) SaveDetails(detailsRequest models.ProfileDetails) error {
+func (s service) SaveDetails(detailsRequest models2.QuarantineDetails) error {
 	user, err := mapToDBQuarantine(detailsRequest)
 	if err != nil {
 		return err
@@ -66,15 +67,15 @@ func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, 
 	return daysStatus, nil
 }
 
-func (s service) GetDetails(mobileNumber string) (models.ProfileDetails, error) {
+func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, error) {
 	quarantine, err := s.repository.GetDetails(mobileNumber)
 	if err != nil {
-		return models.ProfileDetails{}, err
+		return models2.QuarantineDetails{}, err
 	}
 	return mapFromDBQuarantine(quarantine), nil
 }
 
-func mapToDBQuarantine(detailRequest models.ProfileDetails) (dbmodels.Quarantine, error) {
+func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quarantine, error) {
 	DOB, err := time.Parse(constants.DetailsTimeFormat, detailRequest.DOB)
 	if err != nil {
 		logrus.Error("Could not parse dob ", err)
@@ -106,8 +107,8 @@ func mapToDBQuarantine(detailRequest models.ProfileDetails) (dbmodels.Quarantine
 	}, nil
 }
 
-func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models.ProfileDetails {
-	return models.ProfileDetails{
+func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models2.QuarantineDetails {
+	return models2.QuarantineDetails{
 		MobileNumber:           quarantine.MobileNumber,
 		Name:                   quarantine.Name,
 		Address:                mapFromDBAddress(quarantine.Address),
@@ -153,7 +154,7 @@ func mapFromDBTravelHistory(quarantineTravelHistory []dbmodels.QuarantineTravelH
 	return travelHistory
 }
 
-func mapToDBAddress(address models.Address) dbmodels.QuarantineAddress {
+func mapToDBAddress(address models2.Address) dbmodels.QuarantineAddress {
 	return dbmodels.QuarantineAddress{
 		AddressLine1: address.AddressLine1,
 		AddressLine2: address.AddressLine2,
@@ -169,8 +170,8 @@ func mapToDBAddress(address models.Address) dbmodels.QuarantineAddress {
 	}
 }
 
-func mapFromDBAddress(address dbmodels.QuarantineAddress) models.Address {
-	return models.Address{
+func mapFromDBAddress(address dbmodels.QuarantineAddress) models2.Address {
+	return models2.Address{
 		AddressLine1: address.AddressLine1,
 		AddressLine2: address.AddressLine2,
 		AddressLine3: address.AddressLine3,
@@ -180,7 +181,7 @@ func mapFromDBAddress(address dbmodels.QuarantineAddress) models.Address {
 		State:        address.State,
 		Country:      address.Country,
 		PinCode:      address.PinCode,
-		Coordinates: models.Coordinates{
+		Coordinates: models2.Coordinates{
 			Latitude:  address.Latitude,
 			Longitude: address.Longitude,
 		},
