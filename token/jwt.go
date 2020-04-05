@@ -17,6 +17,7 @@ var (
 
 type UserInfo struct {
 	MobileNumber string `json:"mobile_number"`
+	Role         string `json:"role"`
 }
 
 type Claims struct {
@@ -76,4 +77,3 @@ func RefreshToken(token string) (string, time.Time, error) {
 	}
 	return newToken, expiryTime, nil
 }
-

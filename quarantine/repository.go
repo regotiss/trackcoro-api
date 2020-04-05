@@ -10,7 +10,7 @@ import (
 )
 
 type Repository interface {
-	isExists(mobileNumber string) bool
+	IsExists(mobileNumber string) bool
 	SaveDetails(quarantine models.Quarantine) error
 	GetQuarantineDays(mobileNumber string) (uint, time.Time, error)
 	GetDetails(mobileNumber string) (models.Quarantine, error)
@@ -20,7 +20,7 @@ type repository struct {
 	db *gorm.DB
 }
 
-func (r repository) isExists(mobileNumber string) bool {
+func (r repository) IsExists(mobileNumber string) bool {
 	user, err := r.getBy(mobileNumber)
 	if err != nil {
 		return false

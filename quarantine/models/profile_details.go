@@ -12,4 +12,5 @@ type ProfileDetails struct {
 	QuarantineStartedFrom  string          `json:"quarantine_started_from" binding:"required"`
 	FamilyMembers          uint            `json:"family_members" binding:"required"`
 	SecondaryContactNumber string          `json:"secondary_contact_number" binding:"required"`
+	DeviceTokenId          string          `json:"device_token_id" binding:"required"`
 }

@@ -29,8 +29,9 @@ func addSwagger(router *gin.Engine) {
 }
 func addRoutes(router *gin.Engine) {
 	addHealthCheckRoute(router)
+	addRoutesForAdmin(router)
 	addRoutesForQuarantine(router)
-	addRoutesForPolice(router)
+	addRoutesForSO(router)
 }
 
 // HealthCheck godoc
@@ -44,11 +45,19 @@ func addHealthCheckRoute(router *gin.Engine) {
 	router.GET("/api/healthz", healthCheck)
 }
 
+func addRoutesForAdmin(router *gin.Engine) {
+	adminGroup := router.Group("/api/v1/admin")
+	{
+		adminGroup.POST("/verify", controller.AdminController.Verify)
+		adminGroup.POST("/add", controller.AdminController.Add)
+	}
+}
+
 func addRoutesForQuarantine(router *gin.Engine) {
 	router.POST("/api/v1/quarantine/verify", controller.QuarantineController.Verify)
 	quarantineGroup := router.Group("/api/v1/quarantine")
 	{
-		quarantineGroup.Use(TokenAuthMiddleware())
+		quarantineGroup.Use(TokenAuthMiddleware(constants.QuarantineRole))
 		quarantineGroup.GET("", controller.QuarantineController.GetProfileDetails)
 		quarantineGroup.POST("/saveDetails", controller.QuarantineController.SaveProfileDetails)
 		quarantineGroup.GET("/daysStatus", controller.QuarantineController.GetDaysStatus)
@@ -56,7 +65,7 @@ func addRoutesForQuarantine(router *gin.Engine) {
 	}
 }
 
-func addRoutesForPolice(router *gin.Engine) {
+func addRoutesForSO(router *gin.Engine) {
 	policeController := police.NewController()
 	quarantineGroup := router.Group("/api/v1/police")
 	{
@@ -64,7 +73,7 @@ func addRoutesForPolice(router *gin.Engine) {
 	}
 }
 
-func TokenAuthMiddleware() gin.HandlerFunc {
+func TokenAuthMiddleware(role string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authToken := ctx.GetHeader(constants.Authorization)
 		if authToken == constants.Empty {
@@ -72,7 +81,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		userInfo, err := token.ReadToken(authToken)
-		if err != nil || userInfo.MobileNumber == constants.Empty {
+		if err != nil || userInfo.MobileNumber == constants.Empty || userInfo.Role != role {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}

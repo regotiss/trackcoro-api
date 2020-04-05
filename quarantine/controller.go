@@ -87,7 +87,7 @@ func (c controller) GetProfileDetails(ctx *gin.Context) {
 }
 
 func addTokenInHeader(ctx *gin.Context, mobileNumber string) {
-	tokenBody := token.UserInfo{MobileNumber: mobileNumber}
+	tokenBody := token.UserInfo{MobileNumber: mobileNumber, Role: constants.QuarantineRole}
 	generatedToken, generatedTime, err := token.GenerateToken(tokenBody)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -96,6 +96,7 @@ func addTokenInHeader(ctx *gin.Context, mobileNumber string) {
 	ctx.Header("Token", generatedToken)
 	ctx.Header("Generated-At", generatedTime.String())
 }
+
 func getStatusCode(err error) int {
 	if err != nil && err.Error() == constants.NotExists {
 		return http.StatusUnauthorized
@@ -113,6 +114,7 @@ func getMobileNumber(ctx *gin.Context) string {
 	mobileNumber, _ := ctx.Get(constants.MobileNumber)
 	return mobileNumber.(string)
 }
+
 func NewController(service Service) Controller {
 	return controller{service}
 }

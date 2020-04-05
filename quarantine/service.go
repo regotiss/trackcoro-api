@@ -38,7 +38,7 @@ func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSiz
 }
 
 func (s service) Verify(mobileNumber string) bool {
-	return s.repository.isExists(mobileNumber)
+	return s.repository.IsExists(mobileNumber)
 }
 
 func (s service) SaveDetails(detailsRequest models.ProfileDetails) error {
@@ -102,6 +102,7 @@ func mapToDBQuarantine(detailRequest models.ProfileDetails) (dbmodels.Quarantine
 		FamilyMembers:          detailRequest.FamilyMembers,
 		SecondaryContactNumber: detailRequest.SecondaryContactNumber,
 		TravelHistory:          history,
+		DeviceTokenId:          detailRequest.DeviceTokenId,
 	}, nil
 }
 
@@ -139,7 +140,7 @@ func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmode
 	return travelHistory, nil
 }
 
-func mapFromDBTravelHistory(quarantineTravelHistory []dbmodels.QuarantineTravelHistory) []models.TravelHistory{
+func mapFromDBTravelHistory(quarantineTravelHistory []dbmodels.QuarantineTravelHistory) []models.TravelHistory {
 	var travelHistory []models.TravelHistory
 	for _, history := range quarantineTravelHistory {
 		travelHistory = append(travelHistory, models.TravelHistory{
@@ -169,7 +170,7 @@ func mapToDBAddress(address models.Address) dbmodels.QuarantineAddress {
 }
 
 func mapFromDBAddress(address dbmodels.QuarantineAddress) models.Address {
-	return models.Address {
+	return models.Address{
 		AddressLine1: address.AddressLine1,
 		AddressLine2: address.AddressLine2,
 		AddressLine3: address.AddressLine3,
@@ -179,7 +180,7 @@ func mapFromDBAddress(address dbmodels.QuarantineAddress) models.Address {
 		State:        address.State,
 		Country:      address.Country,
 		PinCode:      address.PinCode,
-		Coordinates:  models.Coordinates{
+		Coordinates: models.Coordinates{
 			Latitude:  address.Latitude,
 			Longitude: address.Longitude,
 		},

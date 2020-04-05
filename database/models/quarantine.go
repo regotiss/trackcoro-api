@@ -18,4 +18,5 @@ type Quarantine struct {
 	QuarantineStartedFrom  time.Time
 	FamilyMembers          uint
 	SecondaryContactNumber string
+	DeviceTokenId          string
 }
