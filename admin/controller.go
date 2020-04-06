@@ -17,6 +17,7 @@ type Controller interface {
 	AddSO(ctx *gin.Context)
 	GetSOs(ctx *gin.Context)
 	GetQuarantines(ctx *gin.Context)
+	DeleteSO(ctx *gin.Context)
 }
 
 type controller struct {
@@ -92,6 +93,22 @@ func (c controller) GetQuarantines(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, quarantines)
+}
+
+func (c controller) DeleteSO(ctx *gin.Context) {
+	var deleteSORequest models.GetQuarantinesRequest
+	err := ctx.ShouldBindBodyWith(&deleteSORequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	err = c.service.DeleteSO(utils.GetMobileNumber(ctx), deleteSORequest.MobileNumber)
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
 
 func NewController(service Service) Controller {

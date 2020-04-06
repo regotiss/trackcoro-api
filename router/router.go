@@ -53,6 +53,7 @@ func addRoutesForAdmin(router *gin.Engine) {
 		adminGroup.POST("/addSO", controller.AdminController.AddSO)
 		adminGroup.GET("/SOs", controller.AdminController.GetSOs)
 		adminGroup.POST("/quarantines", controller.AdminController.GetQuarantines)
+		adminGroup.POST("/deleteSO", controller.AdminController.DeleteSO)
 	}
 }
 

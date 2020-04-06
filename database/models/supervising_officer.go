@@ -4,7 +4,7 @@ import "github.com/jinzhu/gorm"
 
 type SupervisingOfficer struct {
 	gorm.Model
-	MobileNumber         string `gorm:"unique"`
+	MobileNumber         string `gorm:"unique;not null"`
 	Name                 string
 	BadgeId              string
 	Designation          string

@@ -15,6 +15,7 @@ type Repository interface {
 	AddSO(adminMobileNumber string, so models.SupervisingOfficer) error
 	GetSOs(adminMobileNumber string) ([]models.SupervisingOfficer, error)
 	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.Quarantine, error)
+	DeleteSO(adminMobileNumber string, soMobileNumber string) error
 }
 
 type repository struct {
@@ -60,6 +61,22 @@ func (r repository) GetSOs(adminMobileNumber string) ([]models.SupervisingOffice
 }
 
 func (r repository) GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.Quarantine, error) {
+	_, err := r.isAdminOfSO(adminMobileNumber, soMobileNumber)
+	if err != nil {
+		return nil, err
+	}
+	return utils.GetQuarantines(r.db, soMobileNumber)
+}
+
+func (r repository) DeleteSO(adminMobileNumber string, soMobileNumber string) error {
+	existingSO, err := r.isAdminOfSO(adminMobileNumber, soMobileNumber)
+	if err != nil {
+		return err
+	}
+	return r.db.Unscoped().Delete(&existingSO).Error
+}
+
+func (r repository) isAdminOfSO(adminMobileNumber string, soMobileNumber string) (*models.SupervisingOfficer, error) {
 	existingAdmin, err := r.getBy(adminMobileNumber)
 	if err != nil {
 		logrus.Error("Admin not found")
@@ -74,9 +91,8 @@ func (r repository) GetQuarantines(adminMobileNumber string, soMobileNumber stri
 		logrus.Error(constants.SONotRegisteredByAdmin)
 		return nil, errors.New(constants.SONotRegisteredByAdmin)
 	}
-	return utils.GetQuarantines(r.db, soMobileNumber)
+	return &existingSO, nil
 }
-
 func (r repository) getBy(mobileNumber string) (models.Admin, error) {
 	var user models.Admin
 	err := r.db.Where(&models.Admin{MobileNumber: mobileNumber}).First(&user).Error
