@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"trackcoro/constants"
 	"trackcoro/database/models"
+	"trackcoro/utils"
 )
 
 type Repository interface {
@@ -13,6 +14,7 @@ type Repository interface {
 	Add(admin models.Admin) error
 	AddSO(adminMobileNumber string, so models.SupervisingOfficer) error
 	GetSOs(adminMobileNumber string) ([]models.SupervisingOfficer, error)
+	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.Quarantine, error)
 }
 
 type repository struct {
@@ -55,6 +57,24 @@ func (r repository) GetSOs(adminMobileNumber string) ([]models.SupervisingOffice
 	var SOs []models.SupervisingOfficer
 	err = r.db.Model(&existingAdmin).Related(&SOs).Error
 	return SOs, err
+}
+
+func (r repository) GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.Quarantine, error) {
+	existingAdmin, err := r.getBy(adminMobileNumber)
+	if err != nil {
+		logrus.Error("Admin not found")
+		return nil, err
+	}
+	existingSO, err := utils.GetSOBy(r.db, soMobileNumber)
+	if err != nil {
+		logrus.Error("SO not found")
+		return nil, err
+	}
+	if existingSO.AdminID != existingAdmin.ID {
+		logrus.Error(constants.SONotRegisteredByAdmin)
+		return nil, errors.New(constants.SONotRegisteredByAdmin)
+	}
+	return utils.GetQuarantines(r.db, soMobileNumber)
 }
 
 func (r repository) getBy(mobileNumber string) (models.Admin, error) {

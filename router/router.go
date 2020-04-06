@@ -52,6 +52,7 @@ func addRoutesForAdmin(router *gin.Engine) {
 		adminGroup.Use(TokenAuthMiddleware(constants.AdminRole))
 		adminGroup.POST("/addSO", controller.AdminController.AddSO)
 		adminGroup.GET("/SOs", controller.AdminController.GetSOs)
+		adminGroup.POST("/quarantines", controller.AdminController.GetQuarantines)
 	}
 }
 

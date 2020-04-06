@@ -7,6 +7,7 @@ import (
 	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
 	"trackcoro/models"
+	"trackcoro/utils"
 )
 
 type Service interface {
@@ -14,6 +15,7 @@ type Service interface {
 	Add() error
 	AddSO(adminMobileNumber string, soRequest models.SODetails) error
 	GetSOs(adminMobileNumber string) ([]models.SODetails, error)
+	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, error)
 }
 
 type service struct {
@@ -47,6 +49,18 @@ func (s service) GetSOs(adminMobileNumber string) ([]models.SODetails, error) {
 		SOs = append(SOs, mapFromDbSO(SO))
 	}
 	return SOs, nil
+}
+
+func (s service) GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, error) {
+	quarantinesFromDB, err := s.repository.GetQuarantines(adminMobileNumber, soMobileNumber)
+	if err != nil {
+		return nil, err
+	}
+	var quarantineDetails []models.QuarantineDetails
+	for _, quarantine := range quarantinesFromDB {
+		quarantineDetails = append(quarantineDetails, utils.GetMappedQuarantine(quarantine))
+	}
+	return quarantineDetails, nil
 }
 
 func mapToDbSO(soRequest models.SODetails) dbmodels.SupervisingOfficer {

@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"trackcoro/admin/models"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
 	"trackcoro/utils"
@@ -15,10 +16,11 @@ type Controller interface {
 	Add(ctx *gin.Context)
 	AddSO(ctx *gin.Context)
 	GetSOs(ctx *gin.Context)
+	GetQuarantines(ctx *gin.Context)
 }
 
 type controller struct {
-	service Service
+	service   Service
 }
 
 func (c controller) Verify(ctx *gin.Context) {
@@ -69,6 +71,27 @@ func (c controller) GetSOs(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, SOs)
+}
+
+func (c controller) GetQuarantines(ctx *gin.Context) {
+	var quarantinesRequest models.GetQuarantinesRequest
+	err := ctx.ShouldBindBodyWith(&quarantinesRequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	quarantines, err := c.service.GetQuarantines(utils.GetMobileNumber(ctx), quarantinesRequest.MobileNumber)
+	if err != nil && err.Error() == constants.SONotRegisteredByAdmin {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.JSON(http.StatusOK, quarantines)
 }
 
 func NewController(service Service) Controller {
