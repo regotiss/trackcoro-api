@@ -27,16 +27,24 @@ func GetMobileNumber(ctx *gin.Context) string {
 }
 
 func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails {
+	var dob string
+	if !quarantine.DOB.IsZero() {
+		dob = quarantine.DOB.String()
+	}
+	var quarantineStartedFrom string
+	if !quarantine.QuarantineStartedFrom.IsZero() {
+		quarantineStartedFrom = quarantine.QuarantineStartedFrom.String()
+	}
 	return models2.QuarantineDetails{
 		MobileNumber:           quarantine.MobileNumber,
 		Name:                   quarantine.Name,
 		Occupation:             quarantine.Occupation,
-		DOB:                    quarantine.DOB.String(),
+		DOB:                    dob,
 		Address:                mapFromDBAddress(quarantine.Address),
 		TravelHistory:          mapFromDBTravelHistory(quarantine.TravelHistory),
 		AnyPractitionerConsult: quarantine.AnyPractitionerConsult,
 		NoOfQuarantineDays:     quarantine.NoOfQuarantineDays,
-		QuarantineStartedFrom:  quarantine.QuarantineStartedFrom.String(),
+		QuarantineStartedFrom:  quarantineStartedFrom,
 		FamilyMembers:          quarantine.FamilyMembers,
 		SecondaryContactNumber: quarantine.SecondaryContactNumber,
 	}
