@@ -68,7 +68,9 @@ func (c controller) UploadPhoto(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = c.service.UploadPhoto(getMobileNumber(ctx), file, header.Size)
+	contentType := header.Header.Get("Content-Type")
+	logrus.Info(contentType)
+	err = c.service.UploadPhoto(getMobileNumber(ctx), file, header.Size, contentType)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return

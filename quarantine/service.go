@@ -19,14 +19,14 @@ type Service interface {
 	SaveDetails(request models2.QuarantineDetails) error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
-	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error
+	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error
 }
 
 type service struct {
 	repository Repository
 }
 
-func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error {
+func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error {
 	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
 	logrus.Info("file name ", photoName)
 	photoContent := make([]byte, photoSize)
@@ -35,7 +35,7 @@ func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSiz
 		logrus.Error("Unable to read photo content", err)
 		return err
 	}
-	_, err = objectstorage.PutObject(photoName, photoContent)
+	_, err = objectstorage.PutObject(photoName, photoContent, contentType)
 	return err
 }
 

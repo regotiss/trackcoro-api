@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/sirupsen/logrus"
 	"io"
-	"net/http"
 )
 
 var (
@@ -27,17 +26,15 @@ func InitializeS3Session() {
 	logrus.Info("S3 session initiated successfully")
 }
 
-func PutObject(key string, data []byte) (*string, error) {
+func PutObject(key string, data []byte, contentType string) (*string, error) {
 	fileBytes := bytes.NewReader(data)
-	fileType := http.DetectContentType(data)
-	logrus.Info("file Type ", fileType)
 	size := fileBytes.Size()
 	params := &s3.PutObjectInput{
 		Bucket:        aws.String(S3Bucket),
 		Key:           aws.String(key),
 		Body:          fileBytes,
 		ContentLength: aws.Int64(size),
-		ContentType:   aws.String(fileType),
+		ContentType:   aws.String(contentType),
 	}
 	resp, err := svc.PutObject(params)
 	if err != nil {
