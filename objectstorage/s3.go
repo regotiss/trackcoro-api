@@ -30,6 +30,7 @@ func InitializeS3Session() {
 func PutObject(key string, data []byte) (*string, error) {
 	fileBytes := bytes.NewReader(data)
 	fileType := http.DetectContentType(data)
+	logrus.Info("file Type ", fileType)
 	size := fileBytes.Size()
 	params := &s3.PutObjectInput{
 		Bucket:        aws.String(S3Bucket),

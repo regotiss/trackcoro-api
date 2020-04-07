@@ -28,7 +28,7 @@ type service struct {
 
 func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error {
 	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
-	logrus.Info("file name", photoName)
+	logrus.Info("file name ", photoName)
 	photoContent := make([]byte, photoSize)
 	_, err := photo.Read(photoContent)
 	if err != nil {
