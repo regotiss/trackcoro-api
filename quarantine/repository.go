@@ -52,17 +52,10 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 }
 
 func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
-	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
+	user, err := utils.GetAllQuarantineDetails(r.db, mobileNumber)
 	if err != nil {
 		return models.Quarantine{}, err
 	}
-	var address models.QuarantineAddress
-	r.db.Model(&user).Related(&address)
-	user.Address = address
-
-	var travelHistory []models.QuarantineTravelHistory
-	r.db.Model(&user).Related(&travelHistory)
-	user.TravelHistory = travelHistory
 	return user, nil
 }
 
