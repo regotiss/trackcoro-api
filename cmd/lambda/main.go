@@ -6,6 +6,7 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"trackcoro/controller"
 	"trackcoro/database"
+	"trackcoro/objectstorage"
 	"trackcoro/router"
 )
 
@@ -14,10 +15,6 @@ var ginLambda *ginadapter.GinLambda
 
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if !initialized {
-		database.ConnectToDB()
-		defer database.DB.Close()
-		database.MigrateSchema()
-
 		controller.InitializeControllers()
 		r := router.InitializeRouter()
 		ginLambda = ginadapter.New(r)
@@ -27,5 +24,11 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 }
 
 func main() {
+
+	database.ConnectToDB()
+	defer database.DB.Close()
+	database.MigrateSchema()
+	objectstorage.InitializeS3Session()
+
 	lambda.Start(Handler)
 }
