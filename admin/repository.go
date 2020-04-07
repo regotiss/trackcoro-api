@@ -74,7 +74,7 @@ func (r repository) DeleteSO(adminMobileNumber string, soMobileNumber string) er
 	if err != nil {
 		return err
 	}
-	return r.db.Unscoped().Delete(&existingSO).Error
+	return r.db.Delete(&existingSO).Error
 }
 
 func (r repository) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error {
