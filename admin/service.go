@@ -17,6 +17,7 @@ type Service interface {
 	GetSOs(adminMobileNumber string) ([]models.SODetails, error)
 	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, error)
 	DeleteSO(adminMobileNumber string, soMobileNumber string) error
+	ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error
 }
 
 type service struct {
@@ -67,6 +68,11 @@ func (s service) GetQuarantines(adminMobileNumber string, soMobileNumber string)
 func (s service) DeleteSO(adminMobileNumber string, soMobileNumber string) error {
 	return s.repository.DeleteSO(adminMobileNumber, soMobileNumber)
 }
+
+func (s service) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error {
+	return s.repository.ReplaceSO(adminMobileNumber, oldSOMobileNumber, newSOMobileNumber)
+}
+
 
 func mapToDbSO(soRequest models.SODetails) dbmodels.SupervisingOfficer {
 	return dbmodels.SupervisingOfficer{

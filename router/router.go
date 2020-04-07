@@ -54,6 +54,7 @@ func addRoutesForAdmin(router *gin.Engine) {
 		adminGroup.GET("/SOs", controller.AdminController.GetSOs)
 		adminGroup.POST("/quarantines", controller.AdminController.GetQuarantines)
 		adminGroup.POST("/deleteSO", controller.AdminController.DeleteSO)
+		adminGroup.POST("/replaceSO", controller.AdminController.ReplaceSO)
 	}
 }
 
