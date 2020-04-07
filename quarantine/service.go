@@ -8,15 +8,17 @@ import (
 	"time"
 	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
+	models2 "trackcoro/models"
 	"trackcoro/objectstorage"
 	"trackcoro/quarantine/models"
+	"trackcoro/utils"
 )
 
 type Service interface {
 	Verify(mobileNumber string) bool
-	SaveDetails(request models.ProfileDetails) error
+	SaveDetails(request models2.QuarantineDetails) error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
-	GetDetails(mobileNumber string) (models.ProfileDetails, error)
+	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64) error
 }
 
@@ -41,7 +43,7 @@ func (s service) Verify(mobileNumber string) bool {
 	return s.repository.IsExists(mobileNumber)
 }
 
-func (s service) SaveDetails(detailsRequest models.ProfileDetails) error {
+func (s service) SaveDetails(detailsRequest models2.QuarantineDetails) error {
 	user, err := mapToDBQuarantine(detailsRequest)
 	if err != nil {
 		return err
@@ -66,15 +68,15 @@ func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, 
 	return daysStatus, nil
 }
 
-func (s service) GetDetails(mobileNumber string) (models.ProfileDetails, error) {
+func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, error) {
 	quarantine, err := s.repository.GetDetails(mobileNumber)
 	if err != nil {
-		return models.ProfileDetails{}, err
+		return models2.QuarantineDetails{}, err
 	}
 	return mapFromDBQuarantine(quarantine), nil
 }
 
-func mapToDBQuarantine(detailRequest models.ProfileDetails) (dbmodels.Quarantine, error) {
+func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quarantine, error) {
 	DOB, err := time.Parse(constants.DetailsTimeFormat, detailRequest.DOB)
 	if err != nil {
 		logrus.Error("Could not parse dob ", err)
@@ -106,20 +108,9 @@ func mapToDBQuarantine(detailRequest models.ProfileDetails) (dbmodels.Quarantine
 	}, nil
 }
 
-func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models.ProfileDetails {
-	return models.ProfileDetails{
-		MobileNumber:           quarantine.MobileNumber,
-		Name:                   quarantine.Name,
-		Address:                mapFromDBAddress(quarantine.Address),
-		Occupation:             quarantine.Occupation,
-		DOB:                    quarantine.DOB.String(),
-		TravelHistory:          mapFromDBTravelHistory(quarantine.TravelHistory),
-		AnyPractitionerConsult: quarantine.AnyPractitionerConsult,
-		NoOfQuarantineDays:     quarantine.NoOfQuarantineDays,
-		QuarantineStartedFrom:  quarantine.QuarantineStartedFrom.String(),
-		FamilyMembers:          quarantine.FamilyMembers,
-		SecondaryContactNumber: quarantine.SecondaryContactNumber,
-	}
+func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models2.QuarantineDetails {
+	details := utils.GetMappedQuarantine(quarantine)
+	return details
 }
 
 func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
@@ -140,20 +131,8 @@ func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmode
 	return travelHistory, nil
 }
 
-func mapFromDBTravelHistory(quarantineTravelHistory []dbmodels.QuarantineTravelHistory) []models.TravelHistory {
-	var travelHistory []models.TravelHistory
-	for _, history := range quarantineTravelHistory {
-		travelHistory = append(travelHistory, models.TravelHistory{
-			PlaceVisited:         history.PlaceVisited,
-			VisitDate:            history.VisitDate.String(),
-			TimeSpentInDays:      history.TimeSpentInDays,
-			ModeOfTransportation: history.ModeOfTransportation,
-		})
-	}
-	return travelHistory
-}
 
-func mapToDBAddress(address models.Address) dbmodels.QuarantineAddress {
+func mapToDBAddress(address models2.Address) dbmodels.QuarantineAddress {
 	return dbmodels.QuarantineAddress{
 		AddressLine1: address.AddressLine1,
 		AddressLine2: address.AddressLine2,
@@ -169,23 +148,6 @@ func mapToDBAddress(address models.Address) dbmodels.QuarantineAddress {
 	}
 }
 
-func mapFromDBAddress(address dbmodels.QuarantineAddress) models.Address {
-	return models.Address{
-		AddressLine1: address.AddressLine1,
-		AddressLine2: address.AddressLine2,
-		AddressLine3: address.AddressLine3,
-		Locality:     address.Locality,
-		City:         address.City,
-		District:     address.District,
-		State:        address.State,
-		Country:      address.Country,
-		PinCode:      address.PinCode,
-		Coordinates: models.Coordinates{
-			Latitude:  address.Latitude,
-			Longitude: address.Longitude,
-		},
-	}
-}
 
 func NewService(repository Repository) Service {
 	return service{repository}

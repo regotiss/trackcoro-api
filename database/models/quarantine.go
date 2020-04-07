@@ -7,7 +7,7 @@ import (
 
 type Quarantine struct {
 	gorm.Model
-	MobileNumber           string `gorm:"unique"`
+	MobileNumber           string `gorm:"unique;not null"`
 	Name                   string
 	Address                QuarantineAddress
 	TravelHistory          []QuarantineTravelHistory
@@ -19,4 +19,5 @@ type Quarantine struct {
 	FamilyMembers          uint
 	SecondaryContactNumber string
 	DeviceTokenId          string
+	SupervisingOfficerID   uint
 }

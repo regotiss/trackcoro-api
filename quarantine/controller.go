@@ -6,8 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"trackcoro/constants"
-	"trackcoro/quarantine/models"
-	"trackcoro/token"
+	models2 "trackcoro/models"
+	"trackcoro/utils"
 )
 
 type Controller interface {
@@ -23,7 +23,7 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	var verifyRequest models.VerifyRequest
+	var verifyRequest models2.VerifyRequest
 	err := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)
@@ -31,15 +31,15 @@ func (c controller) Verify(ctx *gin.Context) {
 		return
 	}
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-	response := models.VerifyResponse{IsRegistered: isRegistered}
+	response := models2.VerifyResponse{IsRegistered: isRegistered}
 	if response.IsRegistered {
-		addTokenInHeader(ctx, verifyRequest.MobileNumber)
+		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.QuarantineRole)
 	}
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (c controller) SaveProfileDetails(ctx *gin.Context) {
-	var saveDetailsRequest models.ProfileDetails
+	var saveDetailsRequest models2.QuarantineDetails
 	err := ctx.ShouldBindBodyWith(&saveDetailsRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)
@@ -84,17 +84,6 @@ func (c controller) GetProfileDetails(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, profileDetails)
-}
-
-func addTokenInHeader(ctx *gin.Context, mobileNumber string) {
-	tokenBody := token.UserInfo{MobileNumber: mobileNumber, Role: constants.QuarantineRole}
-	generatedToken, generatedTime, err := token.GenerateToken(tokenBody)
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.Header("Token", generatedToken)
-	ctx.Header("Generated-At", generatedTime.String())
 }
 
 func getStatusCode(err error) int {
