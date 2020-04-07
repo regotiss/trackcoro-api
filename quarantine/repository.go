@@ -33,6 +33,7 @@ func (r repository) SaveDetails(quarantine models.Quarantine) error {
 		return err
 	}
 	quarantine.ID = user.ID
+	quarantine.SupervisingOfficerID = user.SupervisingOfficerID
 	r.db.Unscoped().Delete(models.QuarantineAddress{QuarantineID: user.ID})
 	r.db.Unscoped().Delete(models.QuarantineTravelHistory{QuarantineID: user.ID})
 	err = r.db.Save(&quarantine).Error
