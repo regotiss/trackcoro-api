@@ -10,6 +10,7 @@ type Service interface {
 	Verify(mobileNumber string) bool
 	AddQuarantine(soMobileNumber string, quarantineMobileNumber string) error
 	GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, error)
+	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error
 }
 
 type service struct {
@@ -35,6 +36,11 @@ func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetai
 	}
 	return quarantineDetails, nil
 }
+
+func (s service) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error {
+	return s.repository.DeleteQuarantine(soMobileNumber, quarantineMobileNumber)
+}
+
 
 func NewService(repository Repository) Service {
 	return service{repository}

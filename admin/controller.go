@@ -84,7 +84,8 @@ func (c controller) GetQuarantines(ctx *gin.Context) {
 		return
 	}
 	quarantines, err := c.service.GetQuarantines(utils.GetMobileNumber(ctx), quarantinesRequest.MobileNumber)
-	if err != nil && err.Error() == constants.SONotRegisteredByAdmin {
+
+	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -104,7 +105,13 @@ func (c controller) DeleteSO(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
 	err = c.service.DeleteSO(utils.GetMobileNumber(ctx), deleteSORequest.MobileNumber)
+
+	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -120,7 +127,13 @@ func (c controller) ReplaceSO(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
 	err = c.service.ReplaceSO(utils.GetMobileNumber(ctx), replaceSORequest.OldSOMobileNumber, replaceSORequest.NewSOMobileNumber)
+
+	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return

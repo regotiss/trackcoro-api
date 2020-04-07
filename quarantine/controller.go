@@ -87,7 +87,7 @@ func (c controller) GetProfileDetails(ctx *gin.Context) {
 }
 
 func getStatusCode(err error) int {
-	if err != nil && err.Error() == constants.NotExists {
+	if err != nil && err.Error() == constants.QuarantineNotExistsError {
 		return http.StatusUnauthorized
 	}
 	if err != nil && err.Error() == constants.TimeParseError {

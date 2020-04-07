@@ -13,7 +13,17 @@ func GetSOBy(db *gorm.DB, mobileNumber string) (models.SupervisingOfficer, error
 	err := db.Where(&models.SupervisingOfficer{MobileNumber: mobileNumber}).First(&user).Error
 	if err != nil {
 		logrus.Error("Could not find mobile number in db ", err)
-		return models.SupervisingOfficer{}, errors.New(constants.NotExists)
+		return models.SupervisingOfficer{}, errors.New(constants.QuarantineNotExistsError)
+	}
+	return user, nil
+}
+
+func GetQuarantineBy(db *gorm.DB, mobileNumber string) (models.Quarantine, error) {
+	var user models.Quarantine
+	err := db.Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error
+	if err != nil {
+		logrus.Error("Could not check mobile number in db ", err)
+		return models.Quarantine{}, errors.New(constants.QuarantineNotExistsError)
 	}
 	return user, nil
 }

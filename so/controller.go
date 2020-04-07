@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
+	"trackcoro/so/models"
 	"trackcoro/utils"
 )
 
@@ -14,6 +15,7 @@ type Controller interface {
 	Verify(ctx *gin.Context)
 	AddQuarantine(ctx *gin.Context)
 	GetQuarantines(ctx *gin.Context)
+	DeleteQuarantine(ctx *gin.Context)
 }
 
 type controller struct {
@@ -54,11 +56,39 @@ func (c controller) AddQuarantine(ctx *gin.Context) {
 
 func (c controller) GetQuarantines(ctx *gin.Context) {
 	quarantines, err := c.service.GetQuarantines(utils.GetMobileNumber(ctx))
+
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	ctx.JSON(http.StatusOK, quarantines)
+}
+
+func (c controller) DeleteQuarantine(ctx *gin.Context) {
+	var removeQuarantineRequest models.RemoveQuarantineRequest
+	err := ctx.ShouldBindBodyWith(&removeQuarantineRequest, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = c.service.DeleteQuarantine(utils.GetMobileNumber(ctx), removeQuarantineRequest.MobileNumber)
+
+	ctx.Status(getStatusCode(err))
+}
+
+func getStatusCode(err error) int {
+	if err != nil && (err.Error() == constants.SONotExistsError || err.Error() == constants.QuarantineNotExistsError) {
+		return http.StatusBadRequest
+	}
+	if err != nil && err.Error() == constants.QuarantineNotRegisteredBySOError {
+		return http.StatusUnauthorized
+	}
+	if err != nil {
+		return http.StatusInternalServerError
+	}
+	return  http.StatusOK
 }
 
 func NewController(service Service) Controller {

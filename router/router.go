@@ -65,6 +65,7 @@ func addRoutesForSO(router *gin.Engine) {
 		quarantineGroup.Use(TokenAuthMiddleware(constants.SORole))
 		quarantineGroup.POST("/addQuarantine", controller.SOController.AddQuarantine)
 		quarantineGroup.GET("/quarantines", controller.SOController.GetQuarantines)
+		quarantineGroup.POST("/deleteQuarantine", controller.SOController.DeleteQuarantine)
 	}
 }
 

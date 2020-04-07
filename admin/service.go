@@ -31,8 +31,8 @@ func (s service) Verify(mobileNumber string) bool {
 func (s service) Add() error {
 	mobileNumber := os.Getenv(constants.AdminMobileNumber)
 	if mobileNumber == constants.Empty {
-		logrus.Error(constants.EnvVariableNotFound)
-		return errors.New(constants.EnvVariableNotFound)
+		logrus.Error(constants.EnvVariableNotFoundError)
+		return errors.New(constants.EnvVariableNotFoundError)
 	}
 	return s.repository.Add(dbmodels.Admin{MobileNumber:mobileNumber})
 }

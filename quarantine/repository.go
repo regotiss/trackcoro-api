@@ -1,12 +1,11 @@
 package quarantine
 
 import (
-	"errors"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"time"
-	"trackcoro/constants"
 	"trackcoro/database/models"
+	"trackcoro/utils"
 )
 
 type Repository interface {
@@ -21,7 +20,7 @@ type repository struct {
 }
 
 func (r repository) IsExists(mobileNumber string) bool {
-	user, err := r.getBy(mobileNumber)
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
 		return false
 	}
@@ -29,7 +28,7 @@ func (r repository) IsExists(mobileNumber string) bool {
 }
 
 func (r repository) SaveDetails(quarantine models.Quarantine) error {
-	user, err := r.getBy(quarantine.MobileNumber)
+	user, err := utils.GetQuarantineBy(r.db, quarantine.MobileNumber)
 	if err != nil {
 		return err
 	}
@@ -44,7 +43,7 @@ func (r repository) SaveDetails(quarantine models.Quarantine) error {
 }
 
 func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, error) {
-	user, err := r.getBy(mobileNumber)
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
 		return 0, time.Time{}, err
 	}
@@ -52,7 +51,7 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 }
 
 func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
-	user, err := r.getBy(mobileNumber)
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
 		return models.Quarantine{}, err
 	}
@@ -63,16 +62,6 @@ func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
 	var travelHistory []models.QuarantineTravelHistory
 	r.db.Model(&user).Related(&travelHistory)
 	user.TravelHistory = travelHistory
-	return user, nil
-}
-
-func (r repository) getBy(mobileNumber string) (models.Quarantine, error) {
-	var user models.Quarantine
-	err := r.db.Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error
-	if err != nil {
-		logrus.Error("Could not check mobile number in db ", err)
-		return models.Quarantine{}, errors.New(constants.NotExists)
-	}
 	return user, nil
 }
 
