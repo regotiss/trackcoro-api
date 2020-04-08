@@ -18,6 +18,7 @@ type Service interface {
 	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, error)
 	DeleteSO(adminMobileNumber string, soMobileNumber string) error
 	ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error
+	DeleteAllSOs(adminMobileNumber string) error
 }
 
 type service struct {
@@ -58,11 +59,8 @@ func (s service) GetQuarantines(adminMobileNumber string, soMobileNumber string)
 	if err != nil {
 		return nil, err
 	}
-	var quarantineDetails []models.QuarantineDetails
-	for _, quarantine := range quarantinesFromDB {
-		quarantineDetails = append(quarantineDetails, utils.GetMappedQuarantine(quarantine))
-	}
-	return quarantineDetails, nil
+
+	return utils.GetMappedQuarantines(quarantinesFromDB), nil
 }
 
 func (s service) DeleteSO(adminMobileNumber string, soMobileNumber string) error {
@@ -71,6 +69,10 @@ func (s service) DeleteSO(adminMobileNumber string, soMobileNumber string) error
 
 func (s service) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error {
 	return s.repository.ReplaceSO(adminMobileNumber, oldSOMobileNumber, newSOMobileNumber)
+}
+
+func (s service) DeleteAllSOs(adminMobileNumber string) error {
+	return s.repository.DeleteAllSOs(adminMobileNumber)
 }
 
 

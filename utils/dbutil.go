@@ -13,7 +13,7 @@ func GetSOBy(db *gorm.DB, mobileNumber string) (models.SupervisingOfficer, error
 	err := db.Where(&models.SupervisingOfficer{MobileNumber: mobileNumber}).First(&user).Error
 	if err != nil {
 		logrus.Error("SO not found with given mobile number ", err)
-		return models.SupervisingOfficer{}, errors.New(constants.QuarantineNotExistsError)
+		return models.SupervisingOfficer{}, errors.New(constants.SONotExistsError)
 	}
 	return user, nil
 }

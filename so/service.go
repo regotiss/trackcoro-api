@@ -30,23 +30,12 @@ func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetai
 	if err != nil {
 		return nil, err
 	}
-	var quarantineDetails []models.QuarantineDetails
-	for _, quarantine := range quarantinesFromDB {
-		quarantineDetails = append(quarantineDetails, getQuarantineDetails(quarantine))
-	}
-	return quarantineDetails, nil
-}
-
-func getQuarantineDetails(quarantine models2.Quarantine) models.QuarantineDetails {
-	mappedQuarantine := utils.GetMappedQuarantine(quarantine)
-	mappedQuarantine.CurrentLocation = utils.MapCoordinates(quarantine.CurrentLocationLatitude, quarantine.CurrentLocationLongitude)
-	return mappedQuarantine
+	return utils.GetMappedQuarantines(quarantinesFromDB), nil
 }
 
 func (s service) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error {
 	return s.repository.DeleteQuarantine(soMobileNumber, quarantineMobileNumber)
 }
-
 
 func NewService(repository Repository) Service {
 	return service{repository}

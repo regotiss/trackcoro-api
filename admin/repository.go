@@ -17,6 +17,7 @@ type Repository interface {
 	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.Quarantine, error)
 	DeleteSO(adminMobileNumber string, soMobileNumber string) error
 	ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error
+	DeleteAllSOs(adminMobileNumber string) error
 }
 
 type repository struct {
@@ -39,7 +40,11 @@ func (r repository) Add(admin models.Admin) error {
 	}
 	logrus.Info("Admin already exists")
 	admin.ID = existingAdmin.ID
-	return r.db.Save(&admin).Error
+	err = r.db.Save(&admin).Error
+	if err != nil {
+		return  err
+	}
+	return r.db.Save(&models.SupervisingOfficer{MobileNumber: admin.MobileNumber, AdminID: admin.ID}).Error
 }
 
 func (r repository) AddSO(mobileNumber string, so models.SupervisingOfficer) error {
@@ -74,7 +79,27 @@ func (r repository) DeleteSO(adminMobileNumber string, soMobileNumber string) er
 	if err != nil {
 		return err
 	}
-	return r.db.Delete(&existingSO).Error
+	transaction := r.db.Begin()
+
+	logrus.Info("Assigning admin as a so to quarantines of deleting so")
+	adminSO, err := utils.GetSOBy(r.db, adminMobileNumber)
+	if err != nil {
+		logrus.Error("Could not assign admin so")
+		return err
+	}
+	quarantine := &models.Quarantine{SupervisingOfficerID: existingSO.ID}
+	err = r.db.Model(&models.Quarantine{}).Where(quarantine).Update(models.Quarantine{SupervisingOfficerID: adminSO.ID}).Error
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	err = transaction.Unscoped().Delete(&existingSO).Error
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+
+	return transaction.Commit().Error
 }
 
 func (r repository) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error {
@@ -101,6 +126,17 @@ func (r repository) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string
 	return r.db.Model(&models.Quarantine{}).Where(quarantine).Update(models.Quarantine{SupervisingOfficerID: newSO.ID}).Error
 }
 
+func (r repository) DeleteAllSOs(adminMobileNumber string) error {
+	r.db.LogMode(true)
+	existingAdmin, err := r.getBy(adminMobileNumber)
+	if err != nil {
+		return err
+	}
+
+	sos := &models.SupervisingOfficer{AdminID: existingAdmin.ID}
+	return r.db.Unscoped().Where(sos).Delete(sos).Error
+}
+
 func (r repository) isAdminOfSO(adminMobileNumber string, soMobileNumber string) (*models.Admin, *models.SupervisingOfficer, error) {
 	existingAdmin, err := r.getBy(adminMobileNumber)
 	if err != nil {
@@ -109,7 +145,7 @@ func (r repository) isAdminOfSO(adminMobileNumber string, soMobileNumber string)
 	}
 	existingSO, err := utils.GetSOBy(r.db, soMobileNumber)
 	if err != nil {
-		logrus.Error(constants.SONotExistsError, err)
+		logrus.Error(err)
 		return &existingAdmin, nil, errors.New(constants.SONotExistsError)
 	}
 	logrus.Info("Checking if so is registered by current admin")

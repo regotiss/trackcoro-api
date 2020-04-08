@@ -19,6 +19,7 @@ type Controller interface {
 	GetQuarantines(ctx *gin.Context)
 	DeleteSO(ctx *gin.Context)
 	ReplaceSO(ctx *gin.Context)
+	DeleteAllSOs(ctx *gin.Context)
 }
 
 type controller struct {
@@ -130,15 +131,26 @@ func (c controller) ReplaceSO(ctx *gin.Context) {
 
 	err = c.service.ReplaceSO(utils.GetMobileNumber(ctx), replaceSORequest.OldSOMobileNumber, replaceSORequest.NewSOMobileNumber)
 
+	ctx.Status(handleError(err))
+}
+
+func (c controller) DeleteAllSOs(ctx *gin.Context) {
+	err := c.service.DeleteAllSOs(utils.GetMobileNumber(ctx))
+
+	ctx.Status(handleError(err))
+}
+
+func handleError(err error) int {
+	if err != nil && err.Error() == constants.AdminNotExistsError {
+		return http.StatusUnauthorized
+	}
 	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
+		return http.StatusBadRequest
 	}
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError
 	}
-	ctx.Status(http.StatusOK)
+	return http.StatusOK
 }
 
 func NewController(service Service) Controller {

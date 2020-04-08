@@ -25,6 +25,23 @@ func GetMobileNumber(ctx *gin.Context) string {
 	return mobileNumber.(string)
 }
 
+func GetMappedQuarantines(quarantines []models.Quarantine) []models2.QuarantineDetails {
+	var quarantineDetails []models2.QuarantineDetails
+	for _, quarantine := range quarantines {
+		quarantineDetails = append(quarantineDetails, getQuarantineDetails(quarantine))
+	}
+	if quarantineDetails == nil {
+		quarantineDetails = []models2.QuarantineDetails{}
+	}
+	return quarantineDetails
+}
+
+func getQuarantineDetails(quarantine models.Quarantine) models2.QuarantineDetails {
+	mappedQuarantine := GetMappedQuarantine(quarantine)
+	mappedQuarantine.CurrentLocation = MapCoordinates(quarantine.CurrentLocationLatitude, quarantine.CurrentLocationLongitude)
+	return mappedQuarantine
+}
+
 func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails {
 	var dob string
 	if !quarantine.DOB.IsZero() {

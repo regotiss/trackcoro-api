@@ -22,13 +22,16 @@ func ConnectToDB() {
 }
 
 func MigrateSchema() {
-	DB.AutoMigrate(&models.Quarantine{})
-	DB.AutoMigrate(&models.QuarantineAddress{})
-	DB.AutoMigrate(&models.QuarantineTravelHistory{})
-
 	DB.AutoMigrate(&models.Admin{})
 	DB.AutoMigrate(&models.SupervisingOfficer{})
-
 	DB.Model(&models.SupervisingOfficer{}).AddForeignKey("admin_id", "admins(id)", "CASCADE", "NO ACTION")
-	DB.Model(&models.Quarantine{}).AddForeignKey("supervising_officer_id", "supervising_officers(id)", "CASCADE", "NO ACTION")
+
+	DB.AutoMigrate(&models.Quarantine{})
+	DB.Model(&models.Quarantine{}).AddForeignKey("supervising_officer_id", "supervising_officers(id)", "RESTRICT", "NO ACTION")
+
+	DB.AutoMigrate(&models.QuarantineAddress{})
+	DB.Model(&models.QuarantineAddress{}).AddForeignKey("quarantine_id", "quarantines(id)", "CASCADE", "NO ACTION")
+
+	DB.AutoMigrate(&models.QuarantineTravelHistory{})
+	DB.Model(&models.QuarantineTravelHistory{}).AddForeignKey("quarantine_id", "quarantines(id)", "CASCADE", "NO ACTION")
 }
