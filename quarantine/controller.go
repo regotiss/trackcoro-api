@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
+	"trackcoro/quarantine/models"
 	"trackcoro/utils"
 )
 
@@ -17,6 +18,7 @@ type Controller interface {
 	GetProfileDetails(ctx *gin.Context)
 	UploadPhoto(ctx *gin.Context)
 	UpdateCurrentLocation(ctx *gin.Context)
+	UpdateDeviceTokenId(ctx *gin.Context)
 }
 
 type controller struct {
@@ -99,6 +101,20 @@ func (c controller) UpdateCurrentLocation(ctx *gin.Context) {
 	}
 
 	err = c.service.UpdateCurrentLocation(getMobileNumber(ctx), request.Latitude, request.Longitude)
+
+	ctx.Status(getStatusCode(err))
+}
+
+func (c controller) UpdateDeviceTokenId(ctx *gin.Context) {
+	var request models.DeviceTokeIdRequest
+	err := ctx.ShouldBindBodyWith(&request, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = c.service.UpdateDeviceTokenId(getMobileNumber(ctx), request.DeviceTokeId)
 
 	ctx.Status(getStatusCode(err))
 }

@@ -21,6 +21,7 @@ type Service interface {
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
+	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
 }
 
 type service struct {
@@ -81,6 +82,10 @@ func (s service) UpdateCurrentLocation(mobileNumber, currentLocationLat, current
 	return s.repository.UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng)
 }
 
+func (s service) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error {
+	return s.repository.UpdateDeviceTokenId(mobileNumber, deviceTokenId)
+}
+
 func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quarantine, error) {
 	DOB, err := time.Parse(constants.DetailsTimeFormat, detailRequest.DOB)
 	if err != nil {
@@ -118,7 +123,7 @@ func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models2.QuarantineDetai
 	return details
 }
 
-func mapToDBTravelHistory(travelHistoryRequest []models.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
+func mapToDBTravelHistory(travelHistoryRequest []models2.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
 	var travelHistory []dbmodels.QuarantineTravelHistory
 	for _, history := range travelHistoryRequest {
 		visitedDate, err := time.Parse(constants.DetailsTimeFormat, history.VisitDate)

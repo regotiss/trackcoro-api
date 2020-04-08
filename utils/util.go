@@ -6,7 +6,6 @@ import (
 	"trackcoro/constants"
 	"trackcoro/database/models"
 	models2 "trackcoro/models"
-	models1 "trackcoro/quarantine/models"
 	"trackcoro/token"
 )
 
@@ -68,10 +67,10 @@ func mapFromDBAddress(address models.QuarantineAddress) models2.Address {
 	}
 }
 
-func mapFromDBTravelHistory(quarantineTravelHistory []models.QuarantineTravelHistory) []models1.TravelHistory {
-	var travelHistory []models1.TravelHistory
+func mapFromDBTravelHistory(quarantineTravelHistory []models.QuarantineTravelHistory) []models2.TravelHistory {
+	var travelHistory []models2.TravelHistory
 	for _, history := range quarantineTravelHistory {
-		travelHistory = append(travelHistory, models1.TravelHistory{
+		travelHistory = append(travelHistory, models2.TravelHistory{
 			PlaceVisited:         history.PlaceVisited,
 			VisitDate:            history.VisitDate.String(),
 			TimeSpentInDays:      history.TimeSpentInDays,

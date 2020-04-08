@@ -14,6 +14,7 @@ type Repository interface {
 	GetQuarantineDays(mobileNumber string) (uint, time.Time, error)
 	GetDetails(mobileNumber string) (models.Quarantine, error)
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
+	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
 }
 
 type repository struct {
@@ -52,6 +53,14 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 	return user.NoOfQuarantineDays, user.QuarantineStartedFrom, nil
 }
 
+func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
+	user, err := utils.GetAllQuarantineDetails(r.db, mobileNumber)
+	if err != nil {
+		return models.Quarantine{}, err
+	}
+	return user, nil
+}
+
 func (r repository) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error {
 	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
@@ -62,15 +71,17 @@ func (r repository) UpdateCurrentLocation(mobileNumber, currentLocationLat, curr
 		CurrentLocationLatitude: currentLocationLat,
 		CurrentLocationLongitude: currentLocationLng,
 	}
-	return r.db.Model(&user).Update(&userWithCurrentLocation).Error
+	return r.db.Model(&user).Update(userWithCurrentLocation).Error
 }
 
-func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
-	user, err := utils.GetAllQuarantineDetails(r.db, mobileNumber)
+func (r repository) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error {
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
-		return models.Quarantine{}, err
+		return err
 	}
-	return user, nil
+	logrus.Info("Updating device token id")
+	userWithTokenId := &models.Quarantine{ DeviceTokenId: deviceTokenId }
+	return r.db.Model(&user).Update(userWithTokenId).Error
 }
 
 func NewRepository(db *gorm.DB) Repository {
