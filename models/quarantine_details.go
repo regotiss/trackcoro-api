@@ -13,5 +13,5 @@ type QuarantineDetails struct {
 	FamilyMembers          uint            `json:"family_members,omitempty" binding:"required"`
 	SecondaryContactNumber string          `json:"secondary_contact_number,omitempty" binding:"required"`
 	DeviceTokenId          string          `json:"device_token_id,omitempty" binding:"required"`
-	CurrentLocation        *Coordinates    `json:"current_location,omitempty" binding:"required"`
+	CurrentLocation        *Coordinates    `json:"current_location,omitempty"`
 }
