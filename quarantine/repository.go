@@ -13,6 +13,7 @@ type Repository interface {
 	SaveDetails(quarantine models.Quarantine) error
 	GetQuarantineDays(mobileNumber string) (uint, time.Time, error)
 	GetDetails(mobileNumber string) (models.Quarantine, error)
+	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
 }
 
 type repository struct {
@@ -49,6 +50,19 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 		return 0, time.Time{}, err
 	}
 	return user.NoOfQuarantineDays, user.QuarantineStartedFrom, nil
+}
+
+func (r repository) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error {
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
+	if err != nil {
+		return err
+	}
+	logrus.Info("Updating current location")
+	userWithCurrentLocation := &models.Quarantine{
+		CurrentLocationLatitude: currentLocationLat,
+		CurrentLocationLongitude: currentLocationLng,
+	}
+	return r.db.Model(&user).Update(&userWithCurrentLocation).Error
 }
 
 func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {

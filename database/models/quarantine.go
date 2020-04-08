@@ -7,17 +7,19 @@ import (
 
 type Quarantine struct {
 	gorm.Model
-	MobileNumber           string `gorm:"unique;not null"`
-	Name                   string
-	Address                QuarantineAddress
-	TravelHistory          []QuarantineTravelHistory
-	Occupation             string
-	DOB                    time.Time
-	AnyPractitionerConsult bool
-	NoOfQuarantineDays     uint
-	QuarantineStartedFrom  time.Time
-	FamilyMembers          uint
-	SecondaryContactNumber string
-	DeviceTokenId          string
-	SupervisingOfficerID   uint
+	MobileNumber             string `gorm:"unique;not null"`
+	Name                     string
+	Address                  QuarantineAddress
+	TravelHistory            []QuarantineTravelHistory
+	Occupation               string
+	DOB                      time.Time
+	AnyPractitionerConsult   bool
+	NoOfQuarantineDays       uint
+	QuarantineStartedFrom    time.Time
+	FamilyMembers            uint
+	SecondaryContactNumber   string
+	DeviceTokenId            string
+	SupervisingOfficerID     uint
+	CurrentLocationLatitude  string
+	CurrentLocationLongitude string
 }

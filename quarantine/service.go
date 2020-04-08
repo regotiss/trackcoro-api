@@ -20,6 +20,7 @@ type Service interface {
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error
+	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
 }
 
 type service struct {
@@ -74,6 +75,10 @@ func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, err
 		return models2.QuarantineDetails{}, err
 	}
 	return mapFromDBQuarantine(quarantine), nil
+}
+
+func (s service) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error {
+	return s.repository.UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng)
 }
 
 func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quarantine, error) {

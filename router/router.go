@@ -78,6 +78,7 @@ func addRoutesForQuarantine(router *gin.Engine) {
 		quarantineGroup.POST("/saveDetails", controller.QuarantineController.SaveProfileDetails)
 		quarantineGroup.GET("/daysStatus", controller.QuarantineController.GetDaysStatus)
 		quarantineGroup.POST("/uploadPhoto", controller.QuarantineController.UploadPhoto)
+		quarantineGroup.POST("/saveCurrentLocation", controller.QuarantineController.UpdateCurrentLocation)
 	}
 }
 

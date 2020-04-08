@@ -16,6 +16,7 @@ type Controller interface {
 	GetDaysStatus(ctx *gin.Context)
 	GetProfileDetails(ctx *gin.Context)
 	UploadPhoto(ctx *gin.Context)
+	UpdateCurrentLocation(ctx *gin.Context)
 }
 
 type controller struct {
@@ -86,6 +87,20 @@ func (c controller) GetProfileDetails(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, profileDetails)
+}
+
+func (c controller) UpdateCurrentLocation(ctx *gin.Context) {
+	var request models2.Coordinates
+	err := ctx.ShouldBindBodyWith(&request, binding.JSON)
+	if err != nil {
+		logrus.Error("Request bind body failed", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err = c.service.UpdateCurrentLocation(getMobileNumber(ctx), request.Latitude, request.Longitude)
+
+	ctx.Status(getStatusCode(err))
 }
 
 func getStatusCode(err error) int {
