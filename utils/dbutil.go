@@ -29,6 +29,16 @@ func GetAllQuarantineDetails(db *gorm.DB, mobileNumber string) (models.Quarantin
 	return user, nil
 }
 
+func GetSOByID(db *gorm.DB, ID uint) (models.SupervisingOfficer, error) {
+	var user models.SupervisingOfficer
+	err := db.Where(&models.SupervisingOfficer{Model: gorm.Model{ID: ID}}).First(&user).Error
+	if err!=nil{
+		logrus.Error("Could not find supervisor with given ID", err)
+		return models.SupervisingOfficer{}, errors.New(constants.SONotExistsError)
+	}
+	return user, nil
+}
+
 func GetQuarantineBy(db *gorm.DB, mobileNumber string) (models.Quarantine, error) {
 	var user models.Quarantine
 	err := db.Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error

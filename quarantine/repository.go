@@ -15,6 +15,7 @@ type Repository interface {
 	GetDetails(mobileNumber string) (models.Quarantine, error)
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
+	GetSupervisingOfficer(ID uint) (models.SupervisingOfficer, error)
 }
 
 type repository struct {
@@ -51,6 +52,14 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 		return 0, time.Time{}, err
 	}
 	return user.NoOfQuarantineDays, user.QuarantineStartedFrom, nil
+}
+
+func (r repository) GetSupervisingOfficer(ID uint)(models.SupervisingOfficer, error)  {
+	supervisingOfficer, err := utils.GetSOByID(r.db, ID)
+	if err != nil{
+		return models.SupervisingOfficer{}, err
+	}
+	return supervisingOfficer, nil
 }
 
 func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {

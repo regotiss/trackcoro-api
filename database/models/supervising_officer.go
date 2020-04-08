@@ -9,6 +9,7 @@ type SupervisingOfficer struct {
 	BadgeId              string
 	Designation          string
 	PoliceStationAddress string
+	DeviceTokenId        string
 	AdminID              uint
 	Quarantines          []Quarantine
 }

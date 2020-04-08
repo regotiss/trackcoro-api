@@ -80,6 +80,7 @@ func addRoutesForQuarantine(router *gin.Engine) {
 		quarantineGroup.POST("/uploadPhoto", controller.QuarantineController.UploadPhoto)
 		quarantineGroup.POST("/saveCurrentLocation", controller.QuarantineController.UpdateCurrentLocation)
 		quarantineGroup.POST("/saveDeviceTokenId", controller.QuarantineController.UpdateDeviceTokenId)
+		quarantineGroup.POST("/sendAlert", controller.QuarantineController.SendAlert)
 	}
 }
 

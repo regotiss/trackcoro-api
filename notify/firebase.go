@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	App            *firebase.App
-	err            error
+	App *firebase.App
+	err error
 )
+var name = "string"
 
 func InitializeFirebase() {
 	logrus.Info("connecting to firebase...")
@@ -26,7 +27,7 @@ func InitializeFirebase() {
 	logrus.Info("Firebase connection established!")
 }
 
-func sendNotification(registrationTokens []string, data map[string]string) (failedTokens []string) {
+func SendNotification(registrationTokens []string, data map[string]string) (failedTokens []string) {
 	ctx := context.Background()
 	client, err := App.Messaging(ctx)
 	if err != nil {

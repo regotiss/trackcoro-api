@@ -9,6 +9,7 @@ import (
 	"trackcoro/constants"
 	dbmodels "trackcoro/database/models"
 	models2 "trackcoro/models"
+	"trackcoro/notify"
 	"trackcoro/objectstorage"
 	"trackcoro/quarantine/models"
 	"trackcoro/utils"
@@ -22,6 +23,7 @@ type Service interface {
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
+	SendAlert(request models2.NotificationRequest, mobileNumber string) error
 }
 
 type service struct {
@@ -68,6 +70,28 @@ func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, 
 		RemainingDays:      remainingDays,
 	}
 	return daysStatus, nil
+}
+
+func (s service) SendAlert(request models2.NotificationRequest, mobileNumber string) error {
+	quarantine, err := s.repository.GetDetails(mobileNumber)
+	if err != nil{
+		return err
+	}
+	SupervisingOfficer, err := s.repository.GetSupervisingOfficer(quarantine.SupervisingOfficerID)
+	if err != nil{
+		return err
+	}
+	failedTokens := notify.SendNotification([]string{SupervisingOfficer.DeviceTokenId}, map[string]string{
+		"type" : request.Type,
+		"message": request.Message,
+		"mobile_number": quarantine.MobileNumber,
+		"name": quarantine.Name,
+		"address": quarantine.Address.AddressLine1,
+	})
+	if len(failedTokens) == 1{
+		return errors.New("couldn't send the notification")
+	}
+	return nil
 }
 
 func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, error) {
@@ -141,7 +165,6 @@ func mapToDBTravelHistory(travelHistoryRequest []models2.TravelHistory) ([]dbmod
 	return travelHistory, nil
 }
 
-
 func mapToDBAddress(address *models2.Address) dbmodels.QuarantineAddress {
 	return dbmodels.QuarantineAddress{
 		AddressLine1: address.AddressLine1,
@@ -157,7 +180,6 @@ func mapToDBAddress(address *models2.Address) dbmodels.QuarantineAddress {
 		Longitude:    address.Coordinates.Longitude,
 	}
 }
-
 
 func NewService(repository Repository) Service {
 	return service{repository}

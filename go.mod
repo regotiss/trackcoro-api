@@ -3,6 +3,7 @@ module trackcoro
 go 1.12
 
 require (
+	firebase.google.com/go v3.12.0+incompatible
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/aws/aws-lambda-go v0.0.0-20190129190457-dcf76fe64fb6
 	github.com/aws/aws-sdk-go v1.30.4
@@ -20,8 +21,9 @@ require (
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.5
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d // indirect
 	golang.org/x/tools v0.0.0-20200402223321-bcf690261a44 // indirect
+	google.golang.org/api v0.21.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )

@@ -19,6 +19,7 @@ type Controller interface {
 	UploadPhoto(ctx *gin.Context)
 	UpdateCurrentLocation(ctx *gin.Context)
 	UpdateDeviceTokenId(ctx *gin.Context)
+	SendAlert(ctx *gin.Context)
 }
 
 type controller struct {
@@ -91,17 +92,22 @@ func (c controller) GetProfileDetails(ctx *gin.Context) {
 	ctx.JSON(status, profileDetails)
 }
 
-func (c controller) UpdateCurrentLocation(ctx *gin.Context) {
-	var request models2.Coordinates
-	err := ctx.ShouldBindBodyWith(&request, binding.JSON)
+func (c controller) SendAlert(ctx *gin.Context) {
+	var notificationRequest models2.NotificationRequest
+	err := ctx.ShouldBindBodyWith(&notificationRequest, binding.JSON)
 	if err != nil {
 		logrus.Error("Request bind body failed", err)
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	err = c.service.SendAlert(notificationRequest, getMobileNumber(ctx))
+	ctx.Status(getStatusCode(err))
+}
 
+func (c controller) UpdateCurrentLocation(ctx *gin.Context) {
+	var request models2.Coordinates
+	err := ctx.ShouldBindBodyWith(&request, binding.JSON)
 	err = c.service.UpdateCurrentLocation(getMobileNumber(ctx), request.Latitude, request.Longitude)
-
 	ctx.Status(getStatusCode(err))
 }
 
