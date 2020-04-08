@@ -142,7 +142,7 @@ func mapToDBTravelHistory(travelHistoryRequest []models2.TravelHistory) ([]dbmod
 }
 
 
-func mapToDBAddress(address models2.Address) dbmodels.QuarantineAddress {
+func mapToDBAddress(address *models2.Address) dbmodels.QuarantineAddress {
 	return dbmodels.QuarantineAddress{
 		AddressLine1: address.AddressLine1,
 		AddressLine2: address.AddressLine2,

@@ -49,8 +49,11 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 	}
 }
 
-func mapFromDBAddress(address models.QuarantineAddress) models2.Address {
-	return models2.Address{
+func mapFromDBAddress(address models.QuarantineAddress) *models2.Address {
+	if address.ID == 0 {
+		return nil
+	}
+	return &models2.Address{
 		AddressLine1: address.AddressLine1,
 		AddressLine2: address.AddressLine2,
 		AddressLine3: address.AddressLine3,
@@ -60,11 +63,18 @@ func mapFromDBAddress(address models.QuarantineAddress) models2.Address {
 		State:        address.State,
 		Country:      address.Country,
 		PinCode:      address.PinCode,
-		Coordinates: models2.Coordinates{
-			Latitude:  address.Latitude,
-			Longitude: address.Longitude,
-		},
+		Coordinates:  MapCoordinates(address.Latitude, address.Longitude),
 	}
+}
+
+func MapCoordinates(latitude, longitude string) *models2.Coordinates {
+	if latitude != constants.Empty || longitude != constants.Empty {
+		return &models2.Coordinates{
+			Latitude:  latitude,
+			Longitude: longitude,
+		}
+	}
+	return nil
 }
 
 func mapFromDBTravelHistory(quarantineTravelHistory []models.QuarantineTravelHistory) []models2.TravelHistory {

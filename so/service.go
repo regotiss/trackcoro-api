@@ -1,7 +1,6 @@
 package so
 
 import (
-	"trackcoro/constants"
 	models2 "trackcoro/database/models"
 	"trackcoro/models"
 	"trackcoro/utils"
@@ -40,12 +39,7 @@ func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetai
 
 func getQuarantineDetails(quarantine models2.Quarantine) models.QuarantineDetails {
 	mappedQuarantine := utils.GetMappedQuarantine(quarantine)
-	if quarantine.CurrentLocationLatitude != constants.Empty || quarantine.CurrentLocationLongitude != constants.Empty {
-		mappedQuarantine.CurrentLocation = &models.Coordinates{
-			Latitude:  quarantine.CurrentLocationLatitude,
-			Longitude: quarantine.CurrentLocationLongitude,
-		}
-	}
+	mappedQuarantine.CurrentLocation = utils.MapCoordinates(quarantine.CurrentLocationLatitude, quarantine.CurrentLocationLongitude)
 	return mappedQuarantine
 }
 
