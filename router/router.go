@@ -89,12 +89,12 @@ func TokenAuthMiddleware(role string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authToken := ctx.GetHeader(constants.Authorization)
 		if authToken == constants.Empty {
-			ctx.AbortWithStatus(http.StatusForbidden)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, constants.NotAuthorizedError)
 			return
 		}
 		userInfo, err := token.ReadToken(authToken)
 		if err != nil || userInfo.MobileNumber == constants.Empty || userInfo.Role != role {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, constants.NotAuthorizedError)
 			return
 		}
 		ctx.Set(constants.MobileNumber, userInfo.MobileNumber)

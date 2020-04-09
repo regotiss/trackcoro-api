@@ -28,10 +28,10 @@ type controller struct {
 
 func (c controller) Verify(ctx *gin.Context) {
 	var verifyRequest models2.VerifyRequest
-	err := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
@@ -44,107 +44,83 @@ func (c controller) Verify(ctx *gin.Context) {
 
 func (c controller) Add(ctx *gin.Context) {
 	err := c.service.Add()
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.Status(http.StatusOK)
+	utils.HandleResponse(ctx, err, nil, handleError)
 }
 
 func (c controller) AddSO(ctx *gin.Context) {
 	var addSORequest models2.SODetails
-	err := ctx.ShouldBindBodyWith(&addSORequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&addSORequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed ", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
-	err = c.service.AddSO(utils.GetMobileNumber(ctx), addSORequest)
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.Status(http.StatusOK)
+	err := c.service.AddSO(utils.GetMobileNumber(ctx), addSORequest)
+
+	utils.HandleResponse(ctx, err, nil, handleError)
 }
 
 func (c controller) GetSOs(ctx *gin.Context) {
 	SOs, err := c.service.GetSOs(utils.GetMobileNumber(ctx))
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.JSON(http.StatusOK, SOs)
+
+	utils.HandleResponse(ctx, err, SOs, handleError)
 }
 
 func (c controller) GetQuarantines(ctx *gin.Context) {
 	var quarantinesRequest models.GetQuarantinesRequest
-	err := ctx.ShouldBindBodyWith(&quarantinesRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&quarantinesRequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed ", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
 	quarantines, err := c.service.GetQuarantines(utils.GetMobileNumber(ctx), quarantinesRequest.MobileNumber)
 
-	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.JSON(http.StatusOK, quarantines)
+	utils.HandleResponse(ctx, err, quarantines, handleError)
 }
 
 func (c controller) DeleteSO(ctx *gin.Context) {
 	var deleteSORequest models.GetQuarantinesRequest
-	err := ctx.ShouldBindBodyWith(&deleteSORequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&deleteSORequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed ", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
 
-	err = c.service.DeleteSO(utils.GetMobileNumber(ctx), deleteSORequest.MobileNumber)
+	err := c.service.DeleteSO(utils.GetMobileNumber(ctx), deleteSORequest.MobileNumber)
 
-	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.Status(http.StatusOK)
+	utils.HandleResponse(ctx, err, nil, handleError)
 }
 
 func (c controller) ReplaceSO(ctx *gin.Context) {
 	var replaceSORequest models.ReplaceSORequest
-	err := ctx.ShouldBindBodyWith(&replaceSORequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&replaceSORequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed ", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
 
-	err = c.service.ReplaceSO(utils.GetMobileNumber(ctx), replaceSORequest.OldSOMobileNumber, replaceSORequest.NewSOMobileNumber)
+	err := c.service.ReplaceSO(utils.GetMobileNumber(ctx), replaceSORequest.OldSOMobileNumber, replaceSORequest.NewSOMobileNumber)
 
-	ctx.Status(handleError(err))
+	utils.HandleResponse(ctx, err, nil, handleError)
 }
 
 func (c controller) DeleteAllSOs(ctx *gin.Context) {
 	err := c.service.DeleteAllSOs(utils.GetMobileNumber(ctx))
 
-	ctx.Status(handleError(err))
+	utils.HandleResponse(ctx, err, nil, handleError)
 }
 
-func handleError(err error) int {
-	if err != nil && err.Error() == constants.AdminNotExistsError {
-		return http.StatusUnauthorized
+func handleError(err *models2.Error) int {
+	if err != nil && err.Error() == constants.AdminNotExistsError.Error() {
+		return http.StatusForbidden
 	}
-	if err != nil && err.Error() == constants.SONotRegisteredByAdminError {
+	if err != nil && err.Error() == constants.SONotExistsError.Error() {
+		return http.StatusBadRequest
+	}
+	if err != nil && err.Error() == constants.SONotRegisteredByAdminError.Error() {
 		return http.StatusBadRequest
 	}
 	if err != nil {

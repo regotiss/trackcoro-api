@@ -106,3 +106,17 @@ func mapFromDBTravelHistory(quarantineTravelHistory []models.QuarantineTravelHis
 	}
 	return travelHistory
 }
+
+func HandleResponse(ctx *gin.Context, err *models2.Error, response interface{}, errorHandler func(error2 *models2.Error) int) {
+	code := errorHandler(err)
+	if code != http.StatusOK {
+		ctx.AbortWithStatusJSON(code, err)
+		return
+	}
+	if response != nil {
+		ctx.JSON(code, response)
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+

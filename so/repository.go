@@ -52,17 +52,15 @@ func (r repository) DeleteQuarantine(soMobileNumber string, quarantineMobileNumb
 func (r repository) isSOOfQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.SupervisingOfficer, *models.Quarantine, error) {
 	existingSO, err := utils.GetSOBy(r.db, soMobileNumber)
 	if err != nil {
-		logrus.Error(constants.SONotExistsError, err)
-		return nil, nil, errors.New(constants.SONotExistsError)
+		return nil, nil, constants.SONotExistsError
 	}
-	existingQuarantine, err := utils.GetQuarantineBy(r.db, quarantineMobileNumber)
-	if err != nil {
-		logrus.Error(constants.QuarantineNotExistsError, err)
+	existingQuarantine, quaError := utils.GetQuarantineBy(r.db, quarantineMobileNumber)
+	if quaError != nil {
 		return &existingSO, nil, errors.New(constants.QuarantineNotExistsError)
 	}
 	logrus.Info("Checking if quarantine is registered by current so")
 	if existingSO.ID != existingQuarantine.SupervisingOfficerID {
-		logrus.Error(constants.QuarantineNotRegisteredBySOError)
+		logrus.Error("quarantine is not registered by so")
 		return &existingSO, &existingQuarantine, errors.New(constants.QuarantineNotRegisteredBySOError)
 	}
 	return &existingSO, &existingQuarantine, nil

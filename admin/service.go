@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"errors"
 	"github.com/sirupsen/logrus"
 	"os"
 	"trackcoro/constants"
@@ -12,13 +11,13 @@ import (
 
 type Service interface {
 	Verify(mobileNumber string) bool
-	Add() error
-	AddSO(adminMobileNumber string, soRequest models.SODetails) error
-	GetSOs(adminMobileNumber string) ([]models.SODetails, error)
-	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, error)
-	DeleteSO(adminMobileNumber string, soMobileNumber string) error
-	ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error
-	DeleteAllSOs(adminMobileNumber string) error
+	Add() *models.Error
+	AddSO(adminMobileNumber string, soRequest models.SODetails) *models.Error
+	GetSOs(adminMobileNumber string) ([]models.SODetails, *models.Error)
+	GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, *models.Error)
+	DeleteSO(adminMobileNumber string, soMobileNumber string) *models.Error
+	ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) *models.Error
+	DeleteAllSOs(adminMobileNumber string) *models.Error
 }
 
 type service struct {
@@ -29,20 +28,20 @@ func (s service) Verify(mobileNumber string) bool {
 	return s.repository.IsExists(mobileNumber)
 }
 
-func (s service) Add() error {
+func (s service) Add() *models.Error {
 	mobileNumber := os.Getenv(constants.AdminMobileNumber)
 	if mobileNumber == constants.Empty {
 		logrus.Error(constants.EnvVariableNotFoundError)
-		return errors.New(constants.EnvVariableNotFoundError)
+		return &constants.InternalError
 	}
 	return s.repository.Add(dbmodels.Admin{MobileNumber:mobileNumber})
 }
 
-func (s service) AddSO(adminMobileNumber string, soRequest models.SODetails) error {
+func (s service) AddSO(adminMobileNumber string, soRequest models.SODetails) *models.Error {
 	return s.repository.AddSO(adminMobileNumber, mapToDbSO(soRequest))
 }
 
-func (s service) GetSOs(adminMobileNumber string) ([]models.SODetails, error) {
+func (s service) GetSOs(adminMobileNumber string) ([]models.SODetails, *models.Error) {
 	SOsFromDB, err := s.repository.GetSOs(adminMobileNumber)
 	if err != nil {
 		return nil, err
@@ -54,7 +53,7 @@ func (s service) GetSOs(adminMobileNumber string) ([]models.SODetails, error) {
 	return SOs, nil
 }
 
-func (s service) GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, error) {
+func (s service) GetQuarantines(adminMobileNumber string, soMobileNumber string) ([]models.QuarantineDetails, *models.Error) {
 	quarantinesFromDB, err := s.repository.GetQuarantines(adminMobileNumber, soMobileNumber)
 	if err != nil {
 		return nil, err
@@ -63,15 +62,15 @@ func (s service) GetQuarantines(adminMobileNumber string, soMobileNumber string)
 	return utils.GetMappedQuarantines(quarantinesFromDB), nil
 }
 
-func (s service) DeleteSO(adminMobileNumber string, soMobileNumber string) error {
+func (s service) DeleteSO(adminMobileNumber string, soMobileNumber string) *models.Error {
 	return s.repository.DeleteSO(adminMobileNumber, soMobileNumber)
 }
 
-func (s service) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) error {
+func (s service) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string, newSOMobileNumber string) *models.Error {
 	return s.repository.ReplaceSO(adminMobileNumber, oldSOMobileNumber, newSOMobileNumber)
 }
 
-func (s service) DeleteAllSOs(adminMobileNumber string) error {
+func (s service) DeleteAllSOs(adminMobileNumber string) *models.Error {
 	return s.repository.DeleteAllSOs(adminMobileNumber)
 }
 

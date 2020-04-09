@@ -79,7 +79,7 @@ func (c controller) DeleteQuarantine(ctx *gin.Context) {
 }
 
 func getStatusCode(err error) int {
-	if err != nil && (err.Error() == constants.SONotExistsError || err.Error() == constants.QuarantineNotExistsError) {
+	if err != nil && (err.Error() == constants.SONotExistsError.Error() || err.Error() == constants.QuarantineNotExistsError) {
 		return http.StatusBadRequest
 	}
 	if err != nil && err.Error() == constants.QuarantineNotRegisteredBySOError {
