@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
-	"trackcoro/quarantine/models"
 	"trackcoro/utils"
 )
 
@@ -51,7 +50,7 @@ func (c controller) SaveProfileDetails(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	saveDetailsRequest.MobileNumber = getMobileNumber(ctx)
+	saveDetailsRequest.MobileNumber = utils.GetMobileNumber(ctx)
 
 	err := c.service.SaveDetails(saveDetailsRequest)
 
@@ -59,7 +58,7 @@ func (c controller) SaveProfileDetails(ctx *gin.Context) {
 }
 
 func (c controller) GetDaysStatus(ctx *gin.Context) {
-	daysStatusResponse, err := c.service.GetDaysStatus(getMobileNumber(ctx))
+	daysStatusResponse, err := c.service.GetDaysStatus(utils.GetMobileNumber(ctx))
 
 	utils.HandleResponse(ctx, err, daysStatusResponse, getStatusCode)
 }
@@ -73,13 +72,13 @@ func (c controller) UploadPhoto(ctx *gin.Context) {
 	}
 	contentType := header.Header.Get("Content-Type")
 
-	err := c.service.UploadPhoto(getMobileNumber(ctx), file, header.Size, contentType)
+	err := c.service.UploadPhoto(utils.GetMobileNumber(ctx), file, header.Size, contentType)
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
 
 func (c controller) GetProfileDetails(ctx *gin.Context) {
-	profileDetails, err := c.service.GetDetails(getMobileNumber(ctx))
+	profileDetails, err := c.service.GetDetails(utils.GetMobileNumber(ctx))
 
 	utils.HandleResponse(ctx, err, profileDetails, getStatusCode)
 }
@@ -93,13 +92,13 @@ func (c controller) UpdateCurrentLocation(ctx *gin.Context) {
 		return
 	}
 
-	err := c.service.UpdateCurrentLocation(getMobileNumber(ctx), request.Latitude, request.Longitude)
+	err := c.service.UpdateCurrentLocation(utils.GetMobileNumber(ctx), request.Latitude, request.Longitude)
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
 
 func (c controller) UpdateDeviceTokenId(ctx *gin.Context) {
-	var request models.DeviceTokeIdRequest
+	var request models2.DeviceTokeIdRequest
 	bindError := ctx.ShouldBindBodyWith(&request, binding.JSON)
 	if bindError != nil {
 		logrus.Error("Request bind body failed", bindError)
@@ -107,7 +106,7 @@ func (c controller) UpdateDeviceTokenId(ctx *gin.Context) {
 		return
 	}
 
-	err := c.service.UpdateDeviceTokenId(getMobileNumber(ctx), request.DeviceTokeId)
+	err := c.service.UpdateDeviceTokenId(utils.GetMobileNumber(ctx), request.DeviceTokeId)
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
@@ -121,7 +120,7 @@ func (c controller) NotifySO(ctx *gin.Context) {
 		return
 	}
 
-	err := c.service.NotifySO(notificationRequest, getMobileNumber(ctx))
+	err := c.service.NotifySO(notificationRequest, utils.GetMobileNumber(ctx))
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
@@ -140,11 +139,6 @@ func getStatusCode(err *models2.Error) int {
 	}
 
 	return http.StatusInternalServerError
-}
-
-func getMobileNumber(ctx *gin.Context) string {
-	mobileNumber, _ := ctx.Get(constants.MobileNumber)
-	return mobileNumber.(string)
 }
 
 func NewController(service Service) Controller {

@@ -14,6 +14,7 @@ type Repository interface {
 	AddQuarantine(mobileNumber string, quarantine models.Quarantine) *models2.Error
 	GetQuarantines(mobileNumber string) ([]models.Quarantine, *models2.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models2.Error
+	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
 }
 
 type repository struct {
@@ -54,6 +55,21 @@ func (r repository) DeleteQuarantine(soMobileNumber string, quarantineMobileNumb
 	dbError := r.db.Delete(existingQuarantine).Error
 	if dbError != nil {
 		logrus.Error("Couldn't delete quarantine ", dbError)
+		return &constants.InternalError
+	}
+	return nil
+}
+
+func (r repository) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error {
+	user, err := utils.GetSOBy(r.db, mobileNumber)
+	if err != nil {
+		return err
+	}
+	logrus.Info("Updating device token id")
+	userWithTokenId := &models.SupervisingOfficer{DeviceTokenId: deviceTokenId}
+	dbError := r.db.Model(&user).Update(userWithTokenId).Error
+	if dbError != nil {
+		logrus.Error("Could not save device token id ", dbError)
 		return &constants.InternalError
 	}
 	return nil

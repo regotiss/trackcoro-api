@@ -16,6 +16,7 @@ type Controller interface {
 	AddQuarantine(ctx *gin.Context)
 	GetQuarantines(ctx *gin.Context)
 	DeleteQuarantine(ctx *gin.Context)
+	UpdateDeviceTokenId(ctx *gin.Context)
 }
 
 type controller struct {
@@ -69,6 +70,20 @@ func (c controller) DeleteQuarantine(ctx *gin.Context) {
 	}
 
 	err := c.service.DeleteQuarantine(utils.GetMobileNumber(ctx), removeQuarantineRequest.MobileNumber)
+
+	utils.HandleResponse(ctx, err, nil, getStatusCode)
+}
+
+func (c controller) UpdateDeviceTokenId(ctx *gin.Context) {
+	var request models2.DeviceTokeIdRequest
+	bindError := ctx.ShouldBindBodyWith(&request, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
+		return
+	}
+
+	err := c.service.UpdateDeviceTokenId(utils.GetMobileNumber(ctx), request.DeviceTokeId)
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }

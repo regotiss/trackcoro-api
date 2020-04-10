@@ -14,7 +14,6 @@ var (
 	App *firebase.App
 	err error
 )
-var name = "string"
 
 func InitializeFirebase() {
 	logrus.Info("connecting to firebase...")
