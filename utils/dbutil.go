@@ -18,33 +18,23 @@ func GetSOBy(db *gorm.DB, mobileNumber string) (models.SupervisingOfficer, *mode
 	return user, nil
 }
 
-func GetAllQuarantineDetails(db *gorm.DB, mobileNumber string) (models.Quarantine, error) {
+func GetAllQuarantineDetails(db *gorm.DB, mobileNumber string) (models.Quarantine, *models2.Error) {
 	var user models.Quarantine
-	err := db.Preload("SupervisingOfficer").Preload("Address").Preload("TravelHistory").Where(&models.Quarantine{MobileNumber: mobileNumber}).
-		First(&user).Error
+	err := db.Preload("SupervisingOfficer").Preload("Address").Preload("TravelHistory").
+		Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error
 	if err != nil {
 		logrus.Error("Quarantine not found with given mobile number ", err)
-		return models.Quarantine{}, constants.QuarantineNotExistsError
+		return models.Quarantine{}, &constants.QuarantineNotExistsError
 	}
 	return user, nil
 }
 
-func GetSOByID(db *gorm.DB, ID uint) (models.SupervisingOfficer, error) {
-	var user models.SupervisingOfficer
-	err := db.Where(&models.SupervisingOfficer{Model: gorm.Model{ID: ID}}).First(&user).Error
-	if err!=nil{
-		logrus.Error("Could not find supervisor with given ID", err)
-		return models.SupervisingOfficer{}, constants.SONotExistsError
-	}
-	return user, nil
-}
-
-func GetQuarantineBy(db *gorm.DB, mobileNumber string) (models.Quarantine, error) {
+func GetQuarantineBy(db *gorm.DB, mobileNumber string) (models.Quarantine, *models2.Error) {
 	var user models.Quarantine
 	err := db.Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error
 	if err != nil {
 		logrus.Error("Quarantine not found with given mobile number ", err)
-		return models.Quarantine{}, constants.QuarantineNotExistsError
+		return models.Quarantine{}, &constants.QuarantineNotExistsError
 	}
 	return user, nil
 }

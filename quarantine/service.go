@@ -1,7 +1,6 @@
 package quarantine
 
 import (
-	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"mime/multipart"
@@ -17,17 +16,46 @@ import (
 
 type Service interface {
 	Verify(mobileNumber string) bool
-	SaveDetails(request models2.QuarantineDetails) error
-	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
-	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
+	SaveDetails(request models2.QuarantineDetails) *models2.Error
+	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, *models2.Error)
+	GetDetails(mobileNumber string) (models2.QuarantineDetails, *models2.Error)
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error
-	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
-	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
-	SendAlert(request models2.NotificationRequest, mobileNumber string) error
+	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error
+	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
+	NotifySO(request models2.NotificationRequest, mobileNumber string) *models2.Error
 }
 
 type service struct {
 	repository Repository
+}
+
+func (s service) Verify(mobileNumber string) bool {
+	return s.repository.IsExists(mobileNumber)
+}
+
+func (s service) SaveDetails(detailsRequest models2.QuarantineDetails) *models2.Error {
+	user, err := mapToDBQuarantine(detailsRequest)
+	if err != nil {
+		return err
+	}
+	return s.repository.SaveDetails(user)
+}
+
+func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, *models2.Error) {
+	days, startedFrom, err := s.repository.GetQuarantineDays(mobileNumber)
+	if err != nil {
+		return models.DaysStatusResponse{}, err
+	}
+	remainingDays := int(days - uint(time.Now().Sub(startedFrom).Hours()/24))
+	if remainingDays < 0 {
+		remainingDays = 0
+	}
+	daysStatus := models.DaysStatusResponse{
+		NoOfQuarantineDays: days,
+		StatedFrom:         startedFrom,
+		RemainingDays:      remainingDays,
+	}
+	return daysStatus, nil
 }
 
 func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error {
@@ -52,36 +80,23 @@ func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSiz
 	return nil
 }
 
-func (s service) Verify(mobileNumber string) bool {
-	return s.repository.IsExists(mobileNumber)
-}
-
-func (s service) SaveDetails(detailsRequest models2.QuarantineDetails) error {
-	user, err := mapToDBQuarantine(detailsRequest)
+func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, *models2.Error) {
+	quarantine, err := s.repository.GetDetails(mobileNumber)
 	if err != nil {
-		return err
+		return models2.QuarantineDetails{}, err
 	}
-	return s.repository.SaveDetails(user)
+	return mapFromDBQuarantine(quarantine), nil
 }
 
-func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error) {
-	days, startedFrom, err := s.repository.GetQuarantineDays(mobileNumber)
-	if err != nil {
-		return models.DaysStatusResponse{}, err
-	}
-	remainingDays := int(days - uint(time.Now().Sub(startedFrom).Hours()/24))
-	if remainingDays < 0 {
-		remainingDays = 0
-	}
-	daysStatus := models.DaysStatusResponse{
-		NoOfQuarantineDays: days,
-		StatedFrom:         startedFrom,
-		RemainingDays:      remainingDays,
-	}
-	return daysStatus, nil
+func (s service) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error {
+	return s.repository.UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng)
 }
 
-func (s service) SendAlert(request models2.NotificationRequest, mobileNumber string) error {
+func (s service) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error {
+	return s.repository.UpdateDeviceTokenId(mobileNumber, deviceTokenId)
+}
+
+func (s service) NotifySO(request models2.NotificationRequest, mobileNumber string) *models2.Error {
 	quarantine, err := s.repository.GetDetails(mobileNumber)
 	if err != nil {
 		return err
@@ -95,42 +110,26 @@ func (s service) SendAlert(request models2.NotificationRequest, mobileNumber str
 		"address":       quarantine.Address.AddressLine1,
 	})
 	if len(failedTokens) == 1 {
-		return errors.New("couldn't send the notification")
+		return &constants.SendNotificationFailedError
 	}
 	return nil
 }
 
-func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, error) {
-	quarantine, err := s.repository.GetDetails(mobileNumber)
-	if err != nil {
-		return models2.QuarantineDetails{}, err
-	}
-	return mapFromDBQuarantine(quarantine), nil
-}
-
-func (s service) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error {
-	return s.repository.UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng)
-}
-
-func (s service) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error {
-	return s.repository.UpdateDeviceTokenId(mobileNumber, deviceTokenId)
-}
-
-func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quarantine, error) {
+func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quarantine, *models2.Error) {
 	DOB, err := time.Parse(constants.DetailsTimeFormat, detailRequest.DOB)
 	if err != nil {
 		logrus.Error("Could not parse dob ", err)
-		return dbmodels.Quarantine{}, errors.New(constants.TimeParseError)
+		return dbmodels.Quarantine{}, &constants.DOBIncorrectFormatError
 	}
-	QuarantineStartedFrom, err := time.Parse(constants.DetailsTimeFormat, detailRequest.QuarantineStartedFrom)
 
+	QuarantineStartedFrom, err := time.Parse(constants.DetailsTimeFormat, detailRequest.QuarantineStartedFrom)
 	if err != nil {
 		logrus.Error("Could not parse quarantine started from ", err)
-		return dbmodels.Quarantine{}, errors.New(constants.TimeParseError)
+		return dbmodels.Quarantine{}, &constants.QuarantineDateIncorrectFormatError
 	}
-	history, err := mapToDBTravelHistory(detailRequest.TravelHistory)
-	if err != nil {
-		return dbmodels.Quarantine{}, err
+	history, mapErr := mapToDBTravelHistory(detailRequest.TravelHistory)
+	if mapErr != nil {
+		return dbmodels.Quarantine{}, mapErr
 	}
 	return dbmodels.Quarantine{
 		MobileNumber:           detailRequest.MobileNumber,
@@ -153,13 +152,13 @@ func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models2.QuarantineDetai
 	return details
 }
 
-func mapToDBTravelHistory(travelHistoryRequest []models2.TravelHistory) ([]dbmodels.QuarantineTravelHistory, error) {
+func mapToDBTravelHistory(travelHistoryRequest []models2.TravelHistory) ([]dbmodels.QuarantineTravelHistory, *models2.Error) {
 	var travelHistory []dbmodels.QuarantineTravelHistory
 	for _, history := range travelHistoryRequest {
 		visitedDate, err := time.Parse(constants.DetailsTimeFormat, history.VisitDate)
 		if err != nil {
 			logrus.Error("Could not parse visited date of travel ", history.PlaceVisited, " error-", err)
-			return nil, errors.New(constants.TimeParseError)
+			return nil, &constants.TravelDateIncorrectFormatError
 		}
 		travelHistory = append(travelHistory, dbmodels.QuarantineTravelHistory{
 			PlaceVisited:         history.PlaceVisited,

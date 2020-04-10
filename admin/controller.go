@@ -34,12 +34,13 @@ func (c controller) Verify(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
+
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-	response := models2.VerifyResponse{IsRegistered: isRegistered}
-	if response.IsRegistered {
+
+	if isRegistered {
 		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.AdminRole)
 	}
-	ctx.JSON(http.StatusOK, response)
+	ctx.JSON(http.StatusOK, models2.VerifyResponse{IsRegistered: isRegistered})
 }
 
 func (c controller) Add(ctx *gin.Context) {

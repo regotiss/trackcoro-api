@@ -12,11 +12,11 @@ import (
 
 type Repository interface {
 	IsExists(mobileNumber string) bool
-	SaveDetails(quarantine models.Quarantine) error
-	GetQuarantineDays(mobileNumber string) (uint, time.Time, error)
-	GetDetails(mobileNumber string) (models.Quarantine, error)
-	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
-	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
+	SaveDetails(quarantine models.Quarantine) *models2.Error
+	GetQuarantineDays(mobileNumber string) (uint, time.Time, *models2.Error)
+	GetDetails(mobileNumber string) (models.Quarantine, *models2.Error)
+	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error
+	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
 	SaveUploadDetails(mobileNumber string) *models2.Error
 }
 
@@ -32,7 +32,7 @@ func (r repository) IsExists(mobileNumber string) bool {
 	return user.MobileNumber == mobileNumber
 }
 
-func (r repository) SaveDetails(quarantine models.Quarantine) error {
+func (r repository) SaveDetails(quarantine models.Quarantine) *models2.Error {
 	user, err := utils.GetQuarantineBy(r.db, quarantine.MobileNumber)
 	if err != nil {
 		return err
@@ -41,14 +41,15 @@ func (r repository) SaveDetails(quarantine models.Quarantine) error {
 	quarantine.SupervisingOfficerID = user.SupervisingOfficerID
 	r.db.Unscoped().Delete(models.QuarantineAddress{QuarantineID: user.ID})
 	r.db.Unscoped().Delete(models.QuarantineTravelHistory{QuarantineID: user.ID})
-	err = r.db.Save(&quarantine).Error
-	if err != nil {
-		logrus.Error("Could not save details ", err)
+	dbErr := r.db.Save(&quarantine).Error
+	if dbErr != nil {
+		logrus.Error("Could not save details ", dbErr)
+		return &constants.InternalError
 	}
-	return err
+	return nil
 }
 
-func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, error) {
+func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, *models2.Error) {
 	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
 		return 0, time.Time{}, err
@@ -56,7 +57,7 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 	return user.NoOfQuarantineDays, user.QuarantineStartedFrom, nil
 }
 
-func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
+func (r repository) GetDetails(mobileNumber string) (models.Quarantine, *models2.Error) {
 	user, err := utils.GetAllQuarantineDetails(r.db, mobileNumber)
 	if err != nil {
 		return models.Quarantine{}, err
@@ -64,27 +65,37 @@ func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
 	return user, nil
 }
 
-func (r repository) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error {
+func (r repository) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error {
 	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
 		return err
 	}
 	logrus.Info("Updating current location")
 	userWithCurrentLocation := &models.Quarantine{
-		CurrentLocationLatitude: currentLocationLat,
+		CurrentLocationLatitude:  currentLocationLat,
 		CurrentLocationLongitude: currentLocationLng,
 	}
-	return r.db.Model(&user).Update(userWithCurrentLocation).Error
+	dbError := r.db.Model(&user).Update(userWithCurrentLocation).Error
+	if dbError != nil {
+		logrus.Error("Could not save current location ", dbError)
+		return &constants.InternalError
+	}
+	return nil
 }
 
-func (r repository) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error {
+func (r repository) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error {
 	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
 		return err
 	}
 	logrus.Info("Updating device token id")
-	userWithTokenId := &models.Quarantine{ DeviceTokenId: deviceTokenId }
-	return r.db.Model(&user).Update(userWithTokenId).Error
+	userWithTokenId := &models.Quarantine{DeviceTokenId: deviceTokenId}
+	dbError := r.db.Model(&user).Update(userWithTokenId).Error
+	if dbError != nil {
+		logrus.Error("Could not save device token id ", dbError)
+		return &constants.InternalError
+	}
+	return nil
 }
 
 func (r repository) SaveUploadDetails(mobileNumber string) *models2.Error {

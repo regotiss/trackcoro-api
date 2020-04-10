@@ -18,6 +18,5 @@ var (
 	SORole         = "supervising_officer"
 )
 var (
-	TimeParseError                   = "could not parse to time format"
 	EnvVariableNotFoundError         = "environment variable not found"
 )
