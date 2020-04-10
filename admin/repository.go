@@ -58,7 +58,7 @@ func (r repository) AddSO(mobileNumber string, so models.SupervisingOfficer) *mo
 	dbError := r.db.Save(&so).Error
 	if dbError != nil {
 		logrus.Error("Could  not save SO ", dbError.Error())
-		return &constants.InternalError
+		return &constants.SOAlreadyExistsError
 	}
 	return nil
 }

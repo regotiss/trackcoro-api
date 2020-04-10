@@ -8,7 +8,8 @@ const (
 	InternalErrorCode = "INTERNAL_ERROR"
 
 	AdminNotExistsCode         = "ADMIN_NOT_EXISTS"
-	SONotExists                = "SO_NOT_EXISTS"
+	SONotExistsCode            = "SO_NOT_EXISTS"
+	SOAlreadyExistsCode        = "SO_ALREADY_EXISTS"
 	SONotRegisteredByAdminCode = "SO_NOT_REGISTERED_BY_ADMIN"
 )
 
@@ -18,6 +19,7 @@ var (
 	InternalError      = models.Error{Code: InternalErrorCode, Message: "Could not perform action"}
 
 	AdminNotExistsError         = models.Error{Code: AdminNotExistsCode, Message: "Admin does not exists"}
-	SONotExistsError            = models.Error{Code: SONotExists, Message: "SO does not exists"}
+	SONotExistsError            = models.Error{Code: SONotExistsCode, Message: "SO does not exists"}
+	SOAlreadyExistsError        = models.Error{Code: SOAlreadyExistsCode, Message: "SO already exists"}
 	SONotRegisteredByAdminError = models.Error{Code: SONotRegisteredByAdminCode, Message: "so is not registered by current admin"}
 )

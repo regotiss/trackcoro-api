@@ -114,19 +114,19 @@ func (c controller) DeleteAllSOs(ctx *gin.Context) {
 }
 
 func handleError(err *models2.Error) int {
-	if err != nil && err.Error() == constants.AdminNotExistsError.Error() {
+	if err == nil {
+		return http.StatusOK
+	}
+	if err.Code == constants.AdminNotExistsCode {
 		return http.StatusForbidden
 	}
-	if err != nil && err.Error() == constants.SONotExistsError.Error() {
+	if err.Code == constants.SONotExistsCode ||
+		err.Code == constants.SONotRegisteredByAdminCode ||
+		err.Code == constants.SOAlreadyExistsCode {
 		return http.StatusBadRequest
 	}
-	if err != nil && err.Error() == constants.SONotRegisteredByAdminError.Error() {
-		return http.StatusBadRequest
-	}
-	if err != nil {
-		return http.StatusInternalServerError
-	}
-	return http.StatusOK
+	
+	return http.StatusInternalServerError
 }
 
 func NewController(service Service) Controller {
