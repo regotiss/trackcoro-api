@@ -34,4 +34,7 @@ func MigrateSchema() {
 
 	DB.AutoMigrate(&models.QuarantineTravelHistory{})
 	DB.Model(&models.QuarantineTravelHistory{}).AddForeignKey("quarantine_id", "quarantines(id)", "CASCADE", "NO ACTION")
+
+	DB.AutoMigrate(&models.PhotoUpload{})
+	DB.Model(&models.PhotoUpload{}).AddForeignKey("quarantine_id", "quarantines(id)", "CASCADE", "NO ACTION")
 }

@@ -51,6 +51,11 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 	if !quarantine.QuarantineStartedFrom.IsZero() {
 		quarantineStartedFrom = quarantine.QuarantineStartedFrom.String()
 	}
+	var soDetails *models2.SODetails
+	if quarantine.SupervisingOfficer != nil {
+		soDetails = &models2.SODetails{MobileNumber: quarantine.SupervisingOfficer.MobileNumber,
+			Name: quarantine.SupervisingOfficer.Name}
+	}
 	return models2.QuarantineDetails{
 		MobileNumber:           quarantine.MobileNumber,
 		Name:                   quarantine.Name,
@@ -63,6 +68,7 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 		QuarantineStartedFrom:  quarantineStartedFrom,
 		FamilyMembers:          quarantine.FamilyMembers,
 		SecondaryContactNumber: quarantine.SecondaryContactNumber,
+		SODetails:              soDetails,
 	}
 }
 
@@ -119,4 +125,3 @@ func HandleResponse(ctx *gin.Context, err *models2.Error, response interface{}, 
 	}
 	ctx.Status(http.StatusOK)
 }
-

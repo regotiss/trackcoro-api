@@ -66,20 +66,21 @@ func (c controller) GetDaysStatus(ctx *gin.Context) {
 }
 
 func (c controller) UploadPhoto(ctx *gin.Context) {
-	file, header, err := ctx.Request.FormFile("photo")
-	if err != nil {
-		logrus.Error("Couldn't find form photo", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	file, header, bindError := ctx.Request.FormFile("photo")
+	if bindError != nil {
+		logrus.Error("Couldn't find form photo", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
 	contentType := header.Header.Get("Content-Type")
-	logrus.Info(contentType)
-	err = c.service.UploadPhoto(getMobileNumber(ctx), file, header.Size, contentType)
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+
+	err := c.service.UploadPhoto(getMobileNumber(ctx), file, header.Size, contentType)
+
+	if err == nil {
+		ctx.Status(http.StatusOK)
 		return
 	}
-	ctx.Status(http.StatusOK)
+	ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 }
 
 func (c controller) GetProfileDetails(ctx *gin.Context) {
@@ -126,7 +127,7 @@ func (c controller) UpdateDeviceTokenId(ctx *gin.Context) {
 }
 
 func getStatusCode(err error) int {
-	if err != nil && err.Error() == constants.QuarantineNotExistsError {
+	if err != nil && err.Error() == constants.QuarantineNotExistsError.Error() {
 		return http.StatusUnauthorized
 	}
 	if err != nil && err.Error() == constants.TimeParseError {

@@ -6,13 +6,14 @@ import (
 	"github.com/sirupsen/logrus"
 	"trackcoro/constants"
 	"trackcoro/database/models"
+	models2 "trackcoro/models"
 	"trackcoro/utils"
 )
 
 type Repository interface {
 	IsExists(mobileNumber string) bool
 	AddQuarantine(mobileNumber string, quarantine models.Quarantine) error
-	GetQuarantines(mobileNumber string) ([]models.Quarantine, error)
+	GetQuarantines(mobileNumber string) ([]models.Quarantine, *models2.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error
 }
 
@@ -37,7 +38,7 @@ func (r repository) AddQuarantine(mobileNumber string, quarantine models.Quarant
 	return r.db.Save(&quarantine).Error
 }
 
-func (r repository) GetQuarantines(mobileNumber string) ([]models.Quarantine, error) {
+func (r repository) GetQuarantines(mobileNumber string) ([]models.Quarantine, *models2.Error) {
 	return utils.GetQuarantines(r.db, mobileNumber)
 }
 
@@ -56,7 +57,7 @@ func (r repository) isSOOfQuarantine(soMobileNumber string, quarantineMobileNumb
 	}
 	existingQuarantine, quaError := utils.GetQuarantineBy(r.db, quarantineMobileNumber)
 	if quaError != nil {
-		return &existingSO, nil, errors.New(constants.QuarantineNotExistsError)
+		return &existingSO, nil, constants.QuarantineNotExistsError
 	}
 	logrus.Info("Checking if quarantine is registered by current so")
 	if existingSO.ID != existingQuarantine.SupervisingOfficerID {

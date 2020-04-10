@@ -3,7 +3,7 @@ package models
 type QuarantineDetails struct {
 	MobileNumber           string          `json:"mobile_number"`
 	Name                   string          `json:"name,omitempty" binding:"required"`
-	Address                *Address         `json:"address,omitempty" binding:"required"`
+	Address                *Address        `json:"address,omitempty" binding:"required"`
 	Occupation             string          `json:"occupation,omitempty" binding:"required"`
 	DOB                    string          `json:"date_of_birth,omitempty" binding:"required"`
 	TravelHistory          []TravelHistory `json:"travel_history,omitempty"`
@@ -14,4 +14,5 @@ type QuarantineDetails struct {
 	SecondaryContactNumber string          `json:"secondary_contact_number,omitempty" binding:"required"`
 	DeviceTokenId          string          `json:"device_token_id,omitempty" binding:"required"`
 	CurrentLocation        *Coordinates    `json:"current_location,omitempty"`
+	SODetails              *SODetails      `json:"supervising_officer,omitempty"`
 }

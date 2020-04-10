@@ -9,7 +9,7 @@ import (
 type Service interface {
 	Verify(mobileNumber string) bool
 	AddQuarantine(soMobileNumber string, quarantineMobileNumber string) error
-	GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, error)
+	GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, *models.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error
 }
 
@@ -25,7 +25,7 @@ func (s service) AddQuarantine(soMobileNumber string, quarantineMobileNumber str
 	return s.repository.AddQuarantine(soMobileNumber, models2.Quarantine{MobileNumber: quarantineMobileNumber})
 }
 
-func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, error) {
+func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, *models.Error) {
 	quarantinesFromDB, err := s.repository.GetQuarantines(soMobileNumber)
 	if err != nil {
 		return nil, err

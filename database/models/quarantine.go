@@ -19,7 +19,9 @@ type Quarantine struct {
 	FamilyMembers            uint
 	SecondaryContactNumber   string
 	DeviceTokenId            string
-	SupervisingOfficerID     uint
 	CurrentLocationLatitude  string
 	CurrentLocationLongitude string
+	SupervisingOfficer       *SupervisingOfficer
+	SupervisingOfficerID     uint
+	PhotoUploads             []*PhotoUpload
 }

@@ -12,4 +12,5 @@ type SupervisingOfficer struct {
 	DeviceTokenId        string
 	AdminID              uint
 	Quarantines          []Quarantine
+	PhotoUploads         []*PhotoUpload
 }

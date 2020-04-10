@@ -11,6 +11,10 @@ const (
 	SONotExistsCode            = "SO_NOT_EXISTS"
 	SOAlreadyExistsCode        = "SO_ALREADY_EXISTS"
 	SONotRegisteredByAdminCode = "SO_NOT_REGISTERED_BY_ADMIN"
+	QuarantineNotExistsCode    = "QUARANTINE_NOT_EXISTS"
+
+	UploadFileContentReadCode = "FILE_CONTENT_ERROR"
+	UploadFileFailureCode     = "FILE_CONTENT_ERROR"
 )
 
 var (
@@ -21,5 +25,9 @@ var (
 	AdminNotExistsError         = models.Error{Code: AdminNotExistsCode, Message: "Admin does not exists"}
 	SONotExistsError            = models.Error{Code: SONotExistsCode, Message: "SO does not exists"}
 	SOAlreadyExistsError        = models.Error{Code: SOAlreadyExistsCode, Message: "SO already exists"}
-	SONotRegisteredByAdminError = models.Error{Code: SONotRegisteredByAdminCode, Message: "so is not registered by current admin"}
+	SONotRegisteredByAdminError = models.Error{Code: SONotRegisteredByAdminCode, Message: "SO is not registered by current admin"}
+	QuarantineNotExistsError    = models.Error{Code: QuarantineNotExistsCode, Message: "Quarantine does not exists"}
+
+	UploadFileContentReadError = models.Error{Code: UploadFileContentReadCode, Message: "Unable to read content of uploaded file"}
+	UploadFileFailureError     = models.Error{Code: UploadFileFailureCode, Message: "Unable to upload file"}
 )

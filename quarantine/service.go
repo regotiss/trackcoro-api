@@ -20,7 +20,7 @@ type Service interface {
 	SaveDetails(request models2.QuarantineDetails) error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, error)
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, error)
-	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error
+	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
 	SendAlert(request models2.NotificationRequest, mobileNumber string) error
@@ -30,17 +30,26 @@ type service struct {
 	repository Repository
 }
 
-func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) error {
+func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error {
 	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
 	logrus.Info("file name ", photoName)
 	photoContent := make([]byte, photoSize)
+
+	logrus.Info("Reading content of file")
 	_, err := photo.Read(photoContent)
 	if err != nil {
 		logrus.Error("Unable to read photo content", err)
-		return err
+		return &constants.UploadFileContentReadError
 	}
+
+	logrus.Info("Uploading file")
 	_, err = objectstorage.PutObject(photoName, photoContent, contentType)
-	return err
+
+	if err != nil {
+		logrus.Error("Could not upload file ", err)
+		return &constants.UploadFileFailureError
+	}
+	return nil
 }
 
 func (s service) Verify(mobileNumber string) bool {
@@ -74,21 +83,18 @@ func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, 
 
 func (s service) SendAlert(request models2.NotificationRequest, mobileNumber string) error {
 	quarantine, err := s.repository.GetDetails(mobileNumber)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	SupervisingOfficer, err := s.repository.GetSupervisingOfficer(quarantine.SupervisingOfficerID)
-	if err != nil{
-		return err
-	}
-	failedTokens := notify.SendNotification([]string{SupervisingOfficer.DeviceTokenId}, map[string]string{
-		"type" : request.Type,
-		"message": request.Message,
+
+	failedTokens := notify.SendNotification([]string{quarantine.SupervisingOfficer.DeviceTokenId}, map[string]string{
+		"type":          request.Type,
+		"message":       request.Message,
 		"mobile_number": quarantine.MobileNumber,
-		"name": quarantine.Name,
-		"address": quarantine.Address.AddressLine1,
+		"name":          quarantine.Name,
+		"address":       quarantine.Address.AddressLine1,
 	})
-	if len(failedTokens) == 1{
+	if len(failedTokens) == 1 {
 		return errors.New("couldn't send the notification")
 	}
 	return nil

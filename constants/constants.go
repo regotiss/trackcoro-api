@@ -18,7 +18,6 @@ var (
 	SORole         = "supervising_officer"
 )
 var (
-	QuarantineNotExistsError         = "quarantine does not exists"
 	TimeParseError                   = "could not parse to time format"
 	EnvVariableNotFoundError         = "environment variable not found"
 	QuarantineNotRegisteredBySOError = "quarantine is not registered by current so"

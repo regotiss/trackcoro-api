@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"trackcoro/constants"
@@ -21,11 +20,11 @@ func GetSOBy(db *gorm.DB, mobileNumber string) (models.SupervisingOfficer, *mode
 
 func GetAllQuarantineDetails(db *gorm.DB, mobileNumber string) (models.Quarantine, error) {
 	var user models.Quarantine
-	err := db.Preload("Address").Preload("TravelHistory").Where(&models.Quarantine{MobileNumber: mobileNumber}).
+	err := db.Preload("SupervisingOfficer").Preload("Address").Preload("TravelHistory").Where(&models.Quarantine{MobileNumber: mobileNumber}).
 		First(&user).Error
 	if err != nil {
 		logrus.Error("Quarantine not found with given mobile number ", err)
-		return models.Quarantine{}, errors.New(constants.QuarantineNotExistsError)
+		return models.Quarantine{}, constants.QuarantineNotExistsError
 	}
 	return user, nil
 }
@@ -45,7 +44,7 @@ func GetQuarantineBy(db *gorm.DB, mobileNumber string) (models.Quarantine, error
 	err := db.Where(&models.Quarantine{MobileNumber: mobileNumber}).First(&user).Error
 	if err != nil {
 		logrus.Error("Quarantine not found with given mobile number ", err)
-		return models.Quarantine{}, errors.New(constants.QuarantineNotExistsError)
+		return models.Quarantine{}, constants.QuarantineNotExistsError
 	}
 	return user, nil
 }

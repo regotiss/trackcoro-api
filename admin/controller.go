@@ -125,7 +125,7 @@ func handleError(err *models2.Error) int {
 		err.Code == constants.SOAlreadyExistsCode {
 		return http.StatusBadRequest
 	}
-	
+
 	return http.StatusInternalServerError
 }
 

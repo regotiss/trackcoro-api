@@ -4,7 +4,9 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"time"
+	"trackcoro/constants"
 	"trackcoro/database/models"
+	models2 "trackcoro/models"
 	"trackcoro/utils"
 )
 
@@ -15,7 +17,7 @@ type Repository interface {
 	GetDetails(mobileNumber string) (models.Quarantine, error)
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) error
-	GetSupervisingOfficer(ID uint) (models.SupervisingOfficer, error)
+	SaveUploadDetails(mobileNumber string) *models2.Error
 }
 
 type repository struct {
@@ -54,14 +56,6 @@ func (r repository) GetQuarantineDays(mobileNumber string) (uint, time.Time, err
 	return user.NoOfQuarantineDays, user.QuarantineStartedFrom, nil
 }
 
-func (r repository) GetSupervisingOfficer(ID uint)(models.SupervisingOfficer, error)  {
-	supervisingOfficer, err := utils.GetSOByID(r.db, ID)
-	if err != nil{
-		return models.SupervisingOfficer{}, err
-	}
-	return supervisingOfficer, nil
-}
-
 func (r repository) GetDetails(mobileNumber string) (models.Quarantine, error) {
 	user, err := utils.GetAllQuarantineDetails(r.db, mobileNumber)
 	if err != nil {
@@ -91,6 +85,18 @@ func (r repository) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) erro
 	logrus.Info("Updating device token id")
 	userWithTokenId := &models.Quarantine{ DeviceTokenId: deviceTokenId }
 	return r.db.Model(&user).Update(userWithTokenId).Error
+}
+
+func (r repository) SaveUploadDetails(mobileNumber string) *models2.Error {
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
+	if err != nil {
+		return &constants.QuarantineNotExistsError
+	}
+	dbError := r.db.Create(&models.PhotoUpload{QuarantineID: user.ID, UploadedOn: time.Now()}).Error
+	if dbError != nil {
+		return &constants.InternalError
+	}
+	return nil
 }
 
 func NewRepository(db *gorm.DB) Repository {
