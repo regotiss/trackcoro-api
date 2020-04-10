@@ -121,9 +121,11 @@ func handleError(err *models2.Error) int {
 		return http.StatusForbidden
 	}
 	if err.Code == constants.SONotExistsCode ||
-		err.Code == constants.SONotRegisteredByAdminCode ||
 		err.Code == constants.SOAlreadyExistsCode {
 		return http.StatusBadRequest
+	}
+	if err.Code == constants.SONotRegisteredByAdminCode {
+		return http.StatusForbidden
 	}
 
 	return http.StatusInternalServerError

@@ -7,11 +7,13 @@ const (
 	BadRequestCode    = "BAD_REQUEST"
 	InternalErrorCode = "INTERNAL_ERROR"
 
-	AdminNotExistsCode         = "ADMIN_NOT_EXISTS"
-	SONotExistsCode            = "SO_NOT_EXISTS"
-	SOAlreadyExistsCode        = "SO_ALREADY_EXISTS"
-	SONotRegisteredByAdminCode = "SO_NOT_REGISTERED_BY_ADMIN"
-	QuarantineNotExistsCode    = "QUARANTINE_NOT_EXISTS"
+	AdminNotExistsCode              = "ADMIN_NOT_EXISTS"
+	SONotExistsCode                 = "SO_NOT_EXISTS"
+	SOAlreadyExistsCode             = "SO_ALREADY_EXISTS"
+	SONotRegisteredByAdminCode      = "SO_NOT_REGISTERED_BY_ADMIN"
+	QuarantineNotExistsCode         = "QUARANTINE_NOT_EXISTS"
+	QuarantineAlreadyExistsCode     = "QUARANTINE_ALREADY_EXISTS"
+	QuarantineNotRegisteredBySOCode = "QUARANTINE_NOT_REGISTERED_BY_SO"
 
 	UploadFileContentReadCode = "FILE_CONTENT_ERROR"
 	UploadFileFailureCode     = "FILE_CONTENT_ERROR"
@@ -22,11 +24,13 @@ var (
 	BadRequestError    = models.Error{Code: BadRequestCode, Message: "Required field(s) are not provided"}
 	InternalError      = models.Error{Code: InternalErrorCode, Message: "Could not perform action"}
 
-	AdminNotExistsError         = models.Error{Code: AdminNotExistsCode, Message: "Admin does not exists"}
-	SONotExistsError            = models.Error{Code: SONotExistsCode, Message: "SO does not exists"}
-	SOAlreadyExistsError        = models.Error{Code: SOAlreadyExistsCode, Message: "SO already exists"}
-	SONotRegisteredByAdminError = models.Error{Code: SONotRegisteredByAdminCode, Message: "SO is not registered by current admin"}
-	QuarantineNotExistsError    = models.Error{Code: QuarantineNotExistsCode, Message: "Quarantine does not exists"}
+	AdminNotExistsError          = models.Error{Code: AdminNotExistsCode, Message: "Admin does not exists"}
+	SONotExistsError             = models.Error{Code: SONotExistsCode, Message: "SO does not exists"}
+	SOAlreadyExistsError         = models.Error{Code: SOAlreadyExistsCode, Message: "SO already exists"}
+	SONotRegisteredByAdminError  = models.Error{Code: SONotRegisteredByAdminCode, Message: "SO is not registered by current admin"}
+	QuarantineNotExistsError     = models.Error{Code: QuarantineNotExistsCode, Message: "Quarantine does not exists"}
+	QuarantineAlreadyExistsError = models.Error{Code: QuarantineAlreadyExistsCode, Message: "Quarantine already exists"}
+	QuarantineNotRegisteredBySOError = models.Error{Code: QuarantineNotRegisteredBySOCode, Message: "Quarantine is not registered by current SO"}
 
 	UploadFileContentReadError = models.Error{Code: UploadFileContentReadCode, Message: "Unable to read content of uploaded file"}
 	UploadFileFailureError     = models.Error{Code: UploadFileFailureCode, Message: "Unable to upload file"}

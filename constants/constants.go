@@ -20,5 +20,4 @@ var (
 var (
 	TimeParseError                   = "could not parse to time format"
 	EnvVariableNotFoundError         = "environment variable not found"
-	QuarantineNotRegisteredBySOError = "quarantine is not registered by current so"
 )

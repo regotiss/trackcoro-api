@@ -8,9 +8,9 @@ import (
 
 type Service interface {
 	Verify(mobileNumber string) bool
-	AddQuarantine(soMobileNumber string, quarantineMobileNumber string) error
+	AddQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error
 	GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, *models.Error)
-	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error
+	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error
 }
 
 type service struct {
@@ -21,7 +21,7 @@ func (s service) Verify(mobileNumber string) bool {
 	return s.repository.IsExists(mobileNumber)
 }
 
-func (s service) AddQuarantine(soMobileNumber string, quarantineMobileNumber string) error {
+func (s service) AddQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error {
 	return s.repository.AddQuarantine(soMobileNumber, models2.Quarantine{MobileNumber: quarantineMobileNumber})
 }
 
@@ -33,7 +33,7 @@ func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetai
 	return utils.GetMappedQuarantines(quarantinesFromDB), nil
 }
 
-func (s service) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) error {
+func (s service) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error {
 	return s.repository.DeleteQuarantine(soMobileNumber, quarantineMobileNumber)
 }
 

@@ -24,13 +24,15 @@ type controller struct {
 
 func (c controller) Verify(ctx *gin.Context) {
 	var verifyRequest models2.VerifyRequest
-	err := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
+
 	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
+
 	response := models2.VerifyResponse{IsRegistered: isRegistered}
 	if response.IsRegistered {
 		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.SORole)
@@ -40,58 +42,54 @@ func (c controller) Verify(ctx *gin.Context) {
 
 func (c controller) AddQuarantine(ctx *gin.Context) {
 	var addQuarantineRequest models2.VerifyRequest
-	err := ctx.ShouldBindBodyWith(&addQuarantineRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&addQuarantineRequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
-	err = c.service.AddQuarantine(utils.GetMobileNumber(ctx), addQuarantineRequest.MobileNumber)
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.Status(http.StatusOK)
+
+	err := c.service.AddQuarantine(utils.GetMobileNumber(ctx), addQuarantineRequest.MobileNumber)
+
+	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
 
 func (c controller) GetQuarantines(ctx *gin.Context) {
 	quarantines, err := c.service.GetQuarantines(utils.GetMobileNumber(ctx))
 
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.JSON(http.StatusOK, quarantines)
+	utils.HandleResponse(ctx, err, quarantines, getStatusCode)
 }
 
 func (c controller) DeleteQuarantine(ctx *gin.Context) {
 	var removeQuarantineRequest models.RemoveQuarantineRequest
-	err := ctx.ShouldBindBodyWith(&removeQuarantineRequest, binding.JSON)
-	if err != nil {
-		logrus.Error("Request bind body failed", err)
-		ctx.AbortWithStatus(http.StatusBadRequest)
+	bindError := ctx.ShouldBindBodyWith(&removeQuarantineRequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
 
-	err = c.service.DeleteQuarantine(utils.GetMobileNumber(ctx), removeQuarantineRequest.MobileNumber)
+	err := c.service.DeleteQuarantine(utils.GetMobileNumber(ctx), removeQuarantineRequest.MobileNumber)
 
-	ctx.Status(getStatusCode(err))
+	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
 
-func getStatusCode(err error) int {
-	if err != nil && (err.Error() == constants.SONotExistsError.Error() || err.Error() == constants.QuarantineNotExistsError.Error()) {
+func getStatusCode(err *models2.Error) int {
+	if err == nil {
+		return http.StatusOK
+	}
+	if err.Code == constants.SONotExistsCode ||
+		err.Code == constants.QuarantineNotExistsCode ||
+		err.Code == constants.QuarantineAlreadyExistsCode {
 		return http.StatusBadRequest
 	}
-	if err != nil && err.Error() == constants.QuarantineNotRegisteredBySOError {
-		return http.StatusUnauthorized
+	if err.Code == constants.QuarantineNotRegisteredBySOError.Code {
+		return http.StatusForbidden
 	}
-	if err != nil {
-		return http.StatusInternalServerError
-	}
-	return  http.StatusOK
+
+	return http.StatusInternalServerError
 }
 
 func NewController(service Service) Controller {
 	return controller{service}
 }
-
