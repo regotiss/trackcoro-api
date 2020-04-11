@@ -6,6 +6,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/api/option"
 	"os"
+	"trackcoro/constants"
+	"trackcoro/models"
 
 	firebase "firebase.google.com/go"
 )
@@ -26,12 +28,12 @@ func InitializeFirebase() {
 	logrus.Info("Firebase connection established!")
 }
 
-func SendNotification(registrationTokens []string, data map[string]string) (failedTokens []string) {
+func SendNotification(registrationTokens []string, data map[string]string) ([]string, *models.Error) {
 	ctx := context.Background()
 	client, err := App.Messaging(ctx)
 	if err != nil {
 		logrus.Error("error getting Messaging client: ", err)
-		return
+		return []string{}, &constants.SendNotificationFailedError
 	}
 	message := &messaging.MulticastMessage{
 		Data:   data,
@@ -41,8 +43,9 @@ func SendNotification(registrationTokens []string, data map[string]string) (fail
 	br, err := client.SendMulticast(context.Background(), message)
 	if err != nil {
 		logrus.Error("error sending notifications: ", err)
+		return []string{}, &constants.SendNotificationFailedError
 	}
-
+	var failedTokens []string
 	if br.FailureCount > 0 {
 		for idx, resp := range br.Responses {
 			if !resp.Success {
@@ -51,5 +54,5 @@ func SendNotification(registrationTokens []string, data map[string]string) (fail
 		}
 		logrus.Error("Failed Tokens: ", failedTokens)
 	}
-	return failedTokens
+	return failedTokens, nil
 }
