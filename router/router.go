@@ -70,6 +70,7 @@ func addRoutesForSO(router *gin.Engine) {
 		quarantineGroup.POST("/deleteQuarantine", controller.SOController.DeleteQuarantine)
 		quarantineGroup.POST("/saveDeviceTokenId", controller.SOController.UpdateDeviceTokenId)
 		quarantineGroup.POST("/notifyQuarantines", controller.SOController.NotifyQuarantines)
+		quarantineGroup.POST("/notifyQuarantine", controller.SOController.NotifyQuarantine)
 	}
 }
 

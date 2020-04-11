@@ -5,6 +5,7 @@ import (
 	models2 "trackcoro/database/models"
 	"trackcoro/models"
 	"trackcoro/notify"
+	models1 "trackcoro/so/models"
 	"trackcoro/utils"
 )
 
@@ -16,6 +17,7 @@ type Service interface {
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models.Error
 	NotifyQuarantines(request models.NotificationRequest, soMobileNumber string) *models.Error
+	NotifyQuarantine(request models1.NotifyQuarantine, soMobileNumber string) *models.Error
 }
 
 type service struct {
@@ -61,9 +63,22 @@ func (s service) NotifyQuarantines(request models.NotificationRequest, soMobileN
 		return err
 	}
 	deviceTokenIds := getDeviceTokenIds(quarantines)
+	return sendNotification(soMobileNumber, deviceTokenIds,request.Type, request.Message)
+}
+
+func (s service) NotifyQuarantine(request models1.NotifyQuarantine, soMobileNumber string) *models.Error {
+	quarantine, err := s.repository.GetQuarantine(soMobileNumber, request.MobileNumber)
+	if err != nil {
+		return err
+	}
+	deviceTokenIds := []string{quarantine.DeviceTokenId}
+	return sendNotification(soMobileNumber, deviceTokenIds,request.Type, request.Message)
+}
+
+func sendNotification(soMobileNumber string, deviceTokenIds []string, msgType string, msg string) *models.Error {
 	failedTokens, err := notify.SendNotification(deviceTokenIds, map[string]string{
-		"type":             request.Type,
-		"message":          request.Message,
+		"type":             msgType,
+		"message":          msg,
 		"so_mobile_number": soMobileNumber,
 	})
 	if err != nil {
