@@ -45,7 +45,6 @@ func SendNotification(registrationTokens []string, data map[string]string) ([]st
 		logrus.Error("error sending notifications: ", err)
 		return []string{}, &constants.SendNotificationFailedError
 	}
-	logrus.Info(br, err)
 	var failedTokens []string
 	if br != nil && br.FailureCount > 0 {
 		for idx, resp := range br.Responses {

@@ -109,7 +109,7 @@ func (s service) NotifySO(request models2.NotificationRequest, mobileNumber stri
 		"name":          quarantine.Name,
 		"address":       quarantine.Address.AddressLine1,
 	})
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	if len(failedTokens) > 0 {

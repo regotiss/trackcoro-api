@@ -1,8 +1,10 @@
 package so
 
 import (
+	"trackcoro/constants"
 	models2 "trackcoro/database/models"
 	"trackcoro/models"
+	"trackcoro/notify"
 	"trackcoro/utils"
 )
 
@@ -13,6 +15,7 @@ type Service interface {
 	GetQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.QuarantineDetails, *models.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models.Error
+	NotifyQuarantines(request models.NotificationRequest, soMobileNumber string) *models.Error
 }
 
 type service struct {
@@ -50,6 +53,34 @@ func (s service) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber 
 
 func (s service) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models.Error {
 	return s.repository.UpdateDeviceTokenId(mobileNumber, deviceTokenId)
+}
+
+func (s service) NotifyQuarantines(request models.NotificationRequest, soMobileNumber string) *models.Error {
+	quarantines, err := s.repository.GetQuarantines(soMobileNumber)
+	if err != nil {
+		return err
+	}
+	deviceTokenIds := getDeviceTokenIds(quarantines)
+	failedTokens, err := notify.SendNotification(deviceTokenIds, map[string]string{
+		"type":             request.Type,
+		"message":          request.Message,
+		"so_mobile_number": soMobileNumber,
+	})
+	if err != nil {
+		return err
+	}
+	if len(failedTokens) > 0 {
+		return &constants.SendNotificationFailedError
+	}
+	return nil
+}
+
+func getDeviceTokenIds(quarantines []models2.Quarantine) []string {
+	var deviceIds []string
+	for _, quarantine := range quarantines {
+		deviceIds = append(deviceIds, quarantine.DeviceTokenId)
+	}
+	return deviceIds
 }
 
 func NewService(repository Repository) Service {
