@@ -6,6 +6,7 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"trackcoro/controller"
 	"trackcoro/database"
+	"trackcoro/notify"
 	"trackcoro/objectstorage"
 	"trackcoro/router"
 )
@@ -28,6 +29,7 @@ func main() {
 	database.ConnectToDB()
 	defer database.DB.Close()
 	database.MigrateSchema()
+	notify.InitializeFirebase()
 	objectstorage.InitializeS3Session()
 
 	lambda.Start(Handler)
