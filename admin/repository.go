@@ -82,7 +82,7 @@ func (r repository) GetQuarantines(adminMobileNumber string, soMobileNumber stri
 	if err != nil {
 		return nil, err
 	}
-	return utils.GetQuarantines(r.db, soMobileNumber)
+	return utils.GetQuarantinesForSO(r.db, soMobileNumber)
 }
 
 func (r repository) DeleteSO(adminMobileNumber string, soMobileNumber string) *models2.Error {
@@ -145,7 +145,6 @@ func (r repository) ReplaceSO(adminMobileNumber string, oldSOMobileNumber string
 }
 
 func (r repository) DeleteAllSOs(adminMobileNumber string) *models2.Error {
-	r.db.LogMode(true)
 	existingAdmin, err := r.getAdminBy(adminMobileNumber)
 	if err != nil {
 		return err

@@ -13,6 +13,7 @@ type Repository interface {
 	IsExists(mobileNumber string) bool
 	AddQuarantine(mobileNumber string, quarantine models.Quarantine) *models2.Error
 	GetQuarantines(mobileNumber string) ([]models.Quarantine, *models2.Error)
+	GetQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.Quarantine, *models2.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models2.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
 }
@@ -44,7 +45,16 @@ func (r repository) AddQuarantine(mobileNumber string, quarantine models.Quarant
 }
 
 func (r repository) GetQuarantines(mobileNumber string) ([]models.Quarantine, *models2.Error) {
-	return utils.GetQuarantines(r.db, mobileNumber)
+	return utils.GetQuarantinesForSO(r.db, mobileNumber)
+}
+
+func (r repository) GetQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.Quarantine, *models2.Error) {
+	_, quarantine, err := r.isSOOfQuarantine(soMobileNumber, quarantineMobileNumber)
+	if err != nil {
+		return nil, err
+	}
+	r.db.Preload("Address").Preload("TravelHistory").Where(&quarantine).First(&quarantine)
+	return quarantine, nil
 }
 
 func (r repository) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models2.Error {

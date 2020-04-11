@@ -14,17 +14,17 @@ import (
 
 var (
 	App *firebase.App
-	err error
 )
 
 func InitializeFirebase() {
 	logrus.Info("connecting to firebase...")
 	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_PRIVATE_KEY")))
-	App, err = firebase.NewApp(context.Background(), nil, opt)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		logrus.Panic("Could not establish firebase connection: ", err)
 		return
 	}
+	App = app
 	logrus.Info("Firebase connection established!")
 }
 
@@ -45,14 +45,15 @@ func SendNotification(registrationTokens []string, data map[string]string) ([]st
 		logrus.Error("error sending notifications: ", err)
 		return []string{}, &constants.SendNotificationFailedError
 	}
+	logrus.Info(br, err)
 	var failedTokens []string
-	if br.FailureCount > 0 {
+	if br != nil && br.FailureCount > 0 {
 		for idx, resp := range br.Responses {
 			if !resp.Success {
 				failedTokens = append(failedTokens, registrationTokens[idx])
 			}
 		}
-		logrus.Error("Failed Tokens: ", failedTokens)
+		logrus.Info("Failed Tokens: ", failedTokens)
 	}
 	return failedTokens, nil
 }

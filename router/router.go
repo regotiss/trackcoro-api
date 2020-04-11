@@ -66,6 +66,7 @@ func addRoutesForSO(router *gin.Engine) {
 		quarantineGroup.Use(TokenAuthMiddleware(constants.SORole))
 		quarantineGroup.POST("/addQuarantine", controller.SOController.AddQuarantine)
 		quarantineGroup.GET("/quarantines", controller.SOController.GetQuarantines)
+		quarantineGroup.POST("/quarantine", controller.SOController.GetQuarantine)
 		quarantineGroup.POST("/deleteQuarantine", controller.SOController.DeleteQuarantine)
 		quarantineGroup.POST("/saveDeviceTokenId", controller.SOController.UpdateDeviceTokenId)
 	}
@@ -77,8 +78,8 @@ func addRoutesForQuarantine(router *gin.Engine) {
 	{
 		quarantineGroup.Use(TokenAuthMiddleware(constants.QuarantineRole))
 		quarantineGroup.GET("", controller.QuarantineController.GetProfileDetails)
+		quarantineGroup.GET("/remainingDays", controller.QuarantineController.GetRemainingDays)
 		quarantineGroup.POST("/saveDetails", controller.QuarantineController.SaveProfileDetails)
-		quarantineGroup.GET("/daysStatus", controller.QuarantineController.GetDaysStatus)
 		quarantineGroup.POST("/uploadPhoto", controller.QuarantineController.UploadPhoto)
 		quarantineGroup.POST("/saveCurrentLocation", controller.QuarantineController.UpdateCurrentLocation)
 		quarantineGroup.POST("/saveDeviceTokenId", controller.QuarantineController.UpdateDeviceTokenId)

@@ -10,6 +10,7 @@ type Service interface {
 	Verify(mobileNumber string) bool
 	AddQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error
 	GetQuarantines(soMobileNumber string) ([]models.QuarantineDetails, *models.Error)
+	GetQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.QuarantineDetails, *models.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models.Error
 }
@@ -32,6 +33,15 @@ func (s service) GetQuarantines(soMobileNumber string) ([]models.QuarantineDetai
 		return nil, err
 	}
 	return utils.GetMappedQuarantines(quarantinesFromDB), nil
+}
+
+func (s service) GetQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.QuarantineDetails, *models.Error) {
+	quarantine, err := s.repository.GetQuarantine(soMobileNumber, quarantineMobileNumber)
+	if err != nil {
+		return nil, err
+	}
+	mappedQuarantine := utils.GetMappedQuarantine(*quarantine)
+	return &mappedQuarantine, nil
 }
 
 func (s service) DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models.Error {

@@ -112,7 +112,7 @@ func (s service) NotifySO(request models2.NotificationRequest, mobileNumber stri
 	if err != nil{
 		return err
 	}
-	if len(failedTokens) == 1 {
+	if len(failedTokens) > 0 {
 		return &constants.SendNotificationFailedError
 	}
 	return nil

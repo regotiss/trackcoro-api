@@ -15,6 +15,7 @@ type Controller interface {
 	Verify(ctx *gin.Context)
 	AddQuarantine(ctx *gin.Context)
 	GetQuarantines(ctx *gin.Context)
+	GetQuarantine(ctx *gin.Context)
 	DeleteQuarantine(ctx *gin.Context)
 	UpdateDeviceTokenId(ctx *gin.Context)
 }
@@ -41,7 +42,7 @@ func (c controller) Verify(ctx *gin.Context) {
 }
 
 func (c controller) AddQuarantine(ctx *gin.Context) {
-	var addQuarantineRequest models2.VerifyRequest
+	var addQuarantineRequest models.QuarantineRequest
 	bindError := ctx.ShouldBindBodyWith(&addQuarantineRequest, binding.JSON)
 	if bindError != nil {
 		logrus.Error("Request bind body failed", bindError)
@@ -60,8 +61,22 @@ func (c controller) GetQuarantines(ctx *gin.Context) {
 	utils.HandleResponse(ctx, err, quarantines, getStatusCode)
 }
 
+func (c controller) GetQuarantine(ctx *gin.Context) {
+	var getQuarantineRequest models.QuarantineRequest
+	bindError := ctx.ShouldBindBodyWith(&getQuarantineRequest, binding.JSON)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
+		return
+	}
+
+	quarantine, err := c.service.GetQuarantine(utils.GetMobileNumber(ctx), getQuarantineRequest.MobileNumber)
+
+	utils.HandleResponse(ctx, err, quarantine, getStatusCode)
+}
+
 func (c controller) DeleteQuarantine(ctx *gin.Context) {
-	var removeQuarantineRequest models.RemoveQuarantineRequest
+	var removeQuarantineRequest models.QuarantineRequest
 	bindError := ctx.ShouldBindBodyWith(&removeQuarantineRequest, binding.JSON)
 	if bindError != nil {
 		logrus.Error("Request bind body failed", bindError)
