@@ -13,8 +13,8 @@ import (
 type Controller interface {
 	Verify(ctx *gin.Context)
 	SaveProfileDetails(ctx *gin.Context)
-	GetDaysStatus(ctx *gin.Context)
 	GetProfileDetails(ctx *gin.Context)
+	GetRemainingDays(ctx *gin.Context)
 	UploadPhoto(ctx *gin.Context)
 	UpdateCurrentLocation(ctx *gin.Context)
 	UpdateDeviceTokenId(ctx *gin.Context)
@@ -55,12 +55,6 @@ func (c controller) SaveProfileDetails(ctx *gin.Context) {
 	err := c.service.SaveDetails(saveDetailsRequest)
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
-}
-
-func (c controller) GetDaysStatus(ctx *gin.Context) {
-	daysStatusResponse, err := c.service.GetDaysStatus(utils.GetMobileNumber(ctx))
-
-	utils.HandleResponse(ctx, err, daysStatusResponse, getStatusCode)
 }
 
 func (c controller) UploadPhoto(ctx *gin.Context) {
@@ -123,6 +117,12 @@ func (c controller) NotifySO(ctx *gin.Context) {
 	err := c.service.NotifySO(notificationRequest, utils.GetMobileNumber(ctx))
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
+}
+
+func (c controller) GetRemainingDays(ctx *gin.Context) {
+	daysStatusResponse, err := c.service.GetDaysStatus(utils.GetMobileNumber(ctx))
+
+	utils.HandleResponse(ctx, err, daysStatusResponse, getStatusCode)
 }
 
 func getStatusCode(err *models2.Error) int {

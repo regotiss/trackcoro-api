@@ -39,7 +39,7 @@ func GetQuarantineBy(db *gorm.DB, mobileNumber string) (models.Quarantine, *mode
 	return user, nil
 }
 
-func GetQuarantines(db *gorm.DB, soMobileNumber string) ([]models.Quarantine, *models2.Error) {
+func GetQuarantinesForSO(db *gorm.DB, soMobileNumber string) ([]models.Quarantine, *models2.Error) {
 	existingSO, err := GetSOBy(db, soMobileNumber)
 	if err != nil {
 		return nil, err
@@ -51,3 +51,4 @@ func GetQuarantines(db *gorm.DB, soMobileNumber string) ([]models.Quarantine, *m
 	}
 	return Quarantines, nil
 }
+
