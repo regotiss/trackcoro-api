@@ -102,14 +102,14 @@ func (s service) NotifySO(request models2.NotificationRequest, mobileNumber stri
 		return err
 	}
 
-	failedTokens := notify.SendNotification([]string{quarantine.SupervisingOfficer.DeviceTokenId}, map[string]string{
+	failedTokens, notifyErr := notify.SendNotification([]string{quarantine.SupervisingOfficer.DeviceTokenId}, map[string]string{
 		"type":          request.Type,
 		"message":       request.Message,
 		"mobile_number": quarantine.MobileNumber,
 		"name":          quarantine.Name,
 		"address":       quarantine.Address.AddressLine1,
 	})
-	if len(failedTokens) == 1 {
+	if notifyErr != nil || len(failedTokens) > 0 {
 		return &constants.SendNotificationFailedError
 	}
 	return nil

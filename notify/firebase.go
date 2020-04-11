@@ -12,26 +12,26 @@ import (
 
 var (
 	App *firebase.App
-	err error
 )
 
 func InitializeFirebase() {
 	logrus.Info("connecting to firebase...")
 	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_PRIVATE_KEY")))
-	App, err = firebase.NewApp(context.Background(), nil, opt)
+	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		logrus.Panic("Could not establish firebase connection: ", err)
 		return
 	}
+	App = app
 	logrus.Info("Firebase connection established!")
 }
 
-func SendNotification(registrationTokens []string, data map[string]string) (failedTokens []string) {
+func SendNotification(registrationTokens []string, data map[string]string) ([]string, error) {
 	ctx := context.Background()
 	client, err := App.Messaging(ctx)
 	if err != nil {
 		logrus.Error("error getting Messaging client: ", err)
-		return
+		return []string{}, err
 	}
 	message := &messaging.MulticastMessage{
 		Data:   data,
@@ -39,17 +39,20 @@ func SendNotification(registrationTokens []string, data map[string]string) (fail
 	}
 
 	br, err := client.SendMulticast(context.Background(), message)
+
 	if err != nil {
 		logrus.Error("error sending notifications: ", err)
+		return []string{}, err
 	}
-
-	if br.FailureCount > 0 {
+	logrus.Info(br, err)
+	var failedTokens []string
+	if br != nil && br.FailureCount > 0 {
 		for idx, resp := range br.Responses {
 			if !resp.Success {
 				failedTokens = append(failedTokens, registrationTokens[idx])
 			}
 		}
-		logrus.Error("Failed Tokens: ", failedTokens)
+		logrus.Info("Failed Tokens: ", failedTokens)
 	}
-	return failedTokens
+	return failedTokens, nil
 }
