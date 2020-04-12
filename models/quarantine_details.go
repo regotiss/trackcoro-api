@@ -13,6 +13,7 @@ type QuarantineDetails struct {
 	FamilyMembers          uint            `json:"family_members,omitempty" binding:"required"`
 	SecondaryContactNumber string          `json:"secondary_contact_number,omitempty" binding:"required"`
 	DeviceTokenId          string          `json:"device_token_id,omitempty" binding:"required"`
+	PhotoURL               string          `json:"photo_url,omitempty"`
 	CurrentLocation        *Coordinates    `json:"current_location,omitempty"`
 	SODetails              *SODetails      `json:"supervising_officer,omitempty"`
 }

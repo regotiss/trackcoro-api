@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"trackcoro/config"
 	"trackcoro/controller"
 	"trackcoro/database"
 	"trackcoro/notify"
@@ -25,7 +26,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 }
 
 func main() {
-
+	config.LoadConfig()
 	database.ConnectToDB()
 	defer database.DB.Close()
 	database.MigrateSchema()

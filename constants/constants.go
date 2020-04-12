@@ -2,6 +2,8 @@ package constants
 
 var (
 	DBConnectionString = "DB_CONNECTION"
+	FirebaseKey = "FIREBASE_PRIVATE_KEY"
+	FileServerURL = "FILE_SERVER_URL"
 	AdminMobileNumber  = "ADMIN_MOBILE_NUMBER"
 )
 

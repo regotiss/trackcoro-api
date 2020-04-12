@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
+	"trackcoro/config"
 	"trackcoro/controller"
 	"trackcoro/database"
 	"trackcoro/notify"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+	config.LoadConfig()
 	database.ConnectToDB()
 	defer database.DB.Close()
 	database.MigrateSchema()

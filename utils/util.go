@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"trackcoro/config"
 	"trackcoro/constants"
 	"trackcoro/database/models"
 	models2 "trackcoro/models"
@@ -56,6 +58,7 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 		soDetails = &models2.SODetails{MobileNumber: quarantine.SupervisingOfficer.MobileNumber,
 			Name: quarantine.SupervisingOfficer.Name}
 	}
+	photoURL := fmt.Sprintf("%s/%s", config.Config.FileServerURL, quarantine.MobileNumber)
 	return models2.QuarantineDetails{
 		MobileNumber:           quarantine.MobileNumber,
 		Name:                   quarantine.Name,
@@ -69,6 +72,7 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 		FamilyMembers:          quarantine.FamilyMembers,
 		SecondaryContactNumber: quarantine.SecondaryContactNumber,
 		SODetails:              soDetails,
+		PhotoURL:               photoURL,
 	}
 }
 

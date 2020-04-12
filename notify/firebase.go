@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/api/option"
-	"os"
+	"trackcoro/config"
 	"trackcoro/constants"
 	"trackcoro/models"
 
@@ -18,7 +18,7 @@ var (
 
 func InitializeFirebase() {
 	logrus.Info("connecting to firebase...")
-	opt := option.WithCredentialsJSON([]byte(os.Getenv("FIREBASE_PRIVATE_KEY")))
+	opt := option.WithCredentialsJSON([]byte(config.Config.FirebasePrivateKey))
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		logrus.Panic("Could not establish firebase connection: ", err)

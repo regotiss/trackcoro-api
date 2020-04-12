@@ -90,7 +90,7 @@ func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, *mo
 	if err != nil {
 		return models2.QuarantineDetails{}, err
 	}
-	return mapFromDBQuarantine(quarantine), nil
+	return utils.GetMappedQuarantine(quarantine), nil
 }
 
 func (s service) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error {
@@ -155,10 +155,6 @@ func mapToDBQuarantine(detailRequest models2.QuarantineDetails) (dbmodels.Quaran
 	}, nil
 }
 
-func mapFromDBQuarantine(quarantine dbmodels.Quarantine) models2.QuarantineDetails {
-	details := utils.GetMappedQuarantine(quarantine)
-	return details
-}
 
 func mapToDBTravelHistory(travelHistoryRequest []models2.TravelHistory) ([]dbmodels.QuarantineTravelHistory, *models2.Error) {
 	var travelHistory []dbmodels.QuarantineTravelHistory
