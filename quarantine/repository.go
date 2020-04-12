@@ -11,7 +11,7 @@ import (
 )
 
 type Repository interface {
-	IsExists(mobileNumber string) bool
+	IsExists(mobileNumber string) (bool, bool)
 	SaveDetails(quarantine models.Quarantine) *models2.Error
 	GetQuarantineDays(mobileNumber string) (uint, time.Time, *models2.Error)
 	GetDetails(mobileNumber string) (models.Quarantine, *models2.Error)
@@ -24,12 +24,12 @@ type repository struct {
 	db *gorm.DB
 }
 
-func (r repository) IsExists(mobileNumber string) bool {
+func (r repository) IsExists(mobileNumber string) (bool, bool) {
 	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
 	if err != nil {
-		return false
+		return false, false
 	}
-	return user.MobileNumber == mobileNumber
+	return user.MobileNumber == mobileNumber, user.Name != constants.Empty
 }
 
 func (r repository) SaveDetails(quarantine models.Quarantine) *models2.Error {
@@ -38,6 +38,8 @@ func (r repository) SaveDetails(quarantine models.Quarantine) *models2.Error {
 		return err
 	}
 	quarantine.ID = user.ID
+	quarantine.CurrentLocationLatitude = quarantine.Address.Latitude
+	quarantine.CurrentLocationLongitude = quarantine.Address.Longitude
 	quarantine.SupervisingOfficerID = user.SupervisingOfficerID
 	r.db.Unscoped().Delete(models.QuarantineAddress{QuarantineID: user.ID})
 	r.db.Unscoped().Delete(models.QuarantineTravelHistory{QuarantineID: user.ID})

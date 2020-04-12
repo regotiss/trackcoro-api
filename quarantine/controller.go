@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
+	"trackcoro/quarantine/models"
 	"trackcoro/utils"
 )
 
@@ -29,7 +30,23 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	utils.VerifyHandler(constants.QuarantineRole, c.service.Verify)(ctx)
+	var verifyRequest models2.VerifyRequest
+	bindError := ctx.ShouldBind(&verifyRequest)
+	if bindError != nil {
+		logrus.Error("Request bind body failed", bindError)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
+		return
+	}
+
+	isRegistered, isSignupCompleted := c.service.Verify(verifyRequest.MobileNumber)
+
+	if isRegistered {
+		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.QuarantineRole)
+	}
+	ctx.JSON(http.StatusOK, models.QVerifyResponse{
+		VerifyResponse: models2.VerifyResponse{IsRegistered: isRegistered},
+		IsSignUpCompleted: isSignupCompleted,
+	})
 }
 
 func (c controller) SaveProfileDetails(ctx *gin.Context) {

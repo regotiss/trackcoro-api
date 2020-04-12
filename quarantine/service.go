@@ -14,7 +14,7 @@ import (
 )
 
 type Service interface {
-	Verify(mobileNumber string) bool
+	Verify(mobileNumber string) (bool, bool)
 	SaveDetails(request models2.QuarantineDetails) *models2.Error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, *models2.Error)
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, *models2.Error)
@@ -29,7 +29,7 @@ type service struct {
 	repository Repository
 }
 
-func (s service) Verify(mobileNumber string) bool {
+func (s service) Verify(mobileNumber string) (bool, bool) {
 	return s.repository.IsExists(mobileNumber)
 }
 
@@ -90,7 +90,7 @@ func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, *mo
 	if err != nil {
 		return models2.QuarantineDetails{}, err
 	}
-	return utils.GetMappedQuarantine(quarantine), nil
+	return utils.GetQuarantineDetails(quarantine), nil
 }
 
 func (s service) UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error {

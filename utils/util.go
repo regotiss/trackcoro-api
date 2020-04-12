@@ -12,7 +12,7 @@ import (
 	"trackcoro/token"
 )
 
-func addTokenInHeader(ctx *gin.Context, mobileNumber string, role string) {
+func AddTokenInHeader(ctx *gin.Context, mobileNumber string, role string) {
 	tokenBody := token.UserInfo{MobileNumber: mobileNumber, Role: role}
 	generatedToken, generatedTime, err := token.GenerateToken(tokenBody)
 	if err != nil {
@@ -31,7 +31,7 @@ func GetMobileNumber(ctx *gin.Context) string {
 func GetMappedQuarantines(quarantines []models.Quarantine) []models2.QuarantineDetails {
 	var quarantineDetails []models2.QuarantineDetails
 	for _, quarantine := range quarantines {
-		quarantineDetails = append(quarantineDetails, getQuarantineDetails(quarantine))
+		quarantineDetails = append(quarantineDetails, GetQuarantineDetails(quarantine))
 	}
 	if quarantineDetails == nil {
 		quarantineDetails = []models2.QuarantineDetails{}
@@ -39,7 +39,7 @@ func GetMappedQuarantines(quarantines []models.Quarantine) []models2.QuarantineD
 	return quarantineDetails
 }
 
-func getQuarantineDetails(quarantine models.Quarantine) models2.QuarantineDetails {
+func GetQuarantineDetails(quarantine models.Quarantine) models2.QuarantineDetails {
 	mappedQuarantine := GetMappedQuarantine(quarantine)
 	mappedQuarantine.CurrentLocation = MapCoordinates(quarantine.CurrentLocationLatitude, quarantine.CurrentLocationLongitude)
 	return mappedQuarantine
@@ -138,7 +138,7 @@ func VerifyHandler(role string, verifyService func(string) bool) func(ctx *gin.C
 		isRegistered := verifyService(verifyRequest.MobileNumber)
 
 		if isRegistered {
-			addTokenInHeader(ctx, verifyRequest.MobileNumber, role)
+			AddTokenInHeader(ctx, verifyRequest.MobileNumber, role)
 		}
 		ctx.JSON(http.StatusOK, models2.VerifyResponse{IsRegistered: isRegistered})
 	}
