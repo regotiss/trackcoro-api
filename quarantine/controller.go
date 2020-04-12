@@ -67,9 +67,7 @@ func (c controller) UploadPhoto(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
 		return
 	}
-	contentType := header.Header.Get("Content-Type")
-
-	err := c.service.UploadPhoto(utils.GetMobileNumber(ctx), file, header.Size, contentType)
+	err := c.service.UploadPhoto(utils.GetMobileNumber(ctx), file, header)
 
 	utils.HandleResponse(ctx, err, nil, getStatusCode)
 }
@@ -128,7 +126,7 @@ func (c controller) GetRemainingDays(ctx *gin.Context) {
 	utils.HandleResponse(ctx, err, daysStatusResponse, getStatusCode)
 }
 
-func (c controller) DownloadPhoto(ctx  *gin.Context) {
+func (c controller) DownloadPhoto(ctx *gin.Context) {
 	content, err := c.service.DownloadPhoto(utils.GetMobileNumber(ctx))
 
 	if err != nil {
@@ -142,6 +140,7 @@ func (c controller) DownloadPhoto(ctx  *gin.Context) {
 	}
 	ctx.Header("Content-Type", http.DetectContentType(content))
 	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%v.jpg;", utils.GetMobileNumber(ctx)))
+	logrus.Info("length: ", len(content))
 	ctx.Header("Content-Length", strconv.Itoa(len(content)))
 	ctx.Status(http.StatusOK)
 }

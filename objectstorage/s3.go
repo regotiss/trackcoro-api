@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/sirupsen/logrus"
 	"io"
+	"net/http"
 )
 
 var (
@@ -26,7 +27,7 @@ func InitializeS3Session() {
 	logrus.Info("S3 session initiated successfully")
 }
 
-func PutObject(key string, data []byte, contentType string) (*string, error) {
+func PutObject(key string, data []byte) (*string, error) {
 	fileBytes := bytes.NewReader(data)
 	size := fileBytes.Size()
 	params := &s3.PutObjectInput{
@@ -34,8 +35,9 @@ func PutObject(key string, data []byte, contentType string) (*string, error) {
 		Key:           aws.String(key),
 		Body:          fileBytes,
 		ContentLength: aws.Int64(size),
-		ContentType:   aws.String(contentType),
+		ContentType:   aws.String(http.DetectContentType(data)),
 	}
+	logrus.Info(params)
 	resp, err := svc.PutObject(params)
 	if err != nil {
 		logrus.Error("Could not save image: ", err)
@@ -61,4 +63,3 @@ func GetObject(key string) ([]byte, error) {
 	}
 	return buf.Bytes(), err
 }
-

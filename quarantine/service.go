@@ -1,7 +1,6 @@
 package quarantine
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"mime/multipart"
 	"time"
@@ -19,7 +18,7 @@ type Service interface {
 	SaveDetails(request models2.QuarantineDetails) *models2.Error
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, *models2.Error)
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, *models2.Error)
-	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error
+	UploadPhoto(mobileNumber string, photo multipart.File, fileHeader *multipart.FileHeader) *models2.Error
 	DownloadPhoto(mobileNumber string) ([]byte, *models2.Error)
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
@@ -59,9 +58,8 @@ func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, 
 	return daysStatus, nil
 }
 
-func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error {
-	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
-	photoContent := make([]byte, photoSize)
+func (s service) UploadPhoto(mobileNumber string, photo multipart.File, fileHeader *multipart.FileHeader) *models2.Error {
+	photoContent := make([]byte, fileHeader.Size)
 
 	logrus.Info("Reading content of file")
 	_, err := photo.Read(photoContent)
@@ -71,7 +69,7 @@ func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSiz
 	}
 
 	logrus.Info("Uploading file")
-	_, err = objectstorage.PutObject(photoName, photoContent, contentType)
+	_, err = objectstorage.PutObject(mobileNumber, photoContent)
 
 	if err != nil {
 		return &constants.UploadFileFailureError
@@ -80,8 +78,7 @@ func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSiz
 }
 
 func (s service) DownloadPhoto(mobileNumber string) ([]byte, *models2.Error) {
-	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
-	content, err := objectstorage.GetObject(photoName)
+	content, err := objectstorage.GetObject(mobileNumber)
 	if err != nil {
 		return nil, &constants.DownloadFileFailureError
 	}
