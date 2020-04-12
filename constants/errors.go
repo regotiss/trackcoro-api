@@ -17,6 +17,7 @@ const (
 
 	UploadFileContentReadCode = "FILE_CONTENT_ERROR"
 	UploadFileFailureCode     = "FILE_UPLOAD_FAILED"
+	DownloadFileFailureCode   = "FILE_DOWNLOAD_FAILED"
 
 	DOBIncorrectFormatCode            = "DOB_INCORRECT_DATE_FORMAT"
 	QuarantineDateIncorrectFormatCode = "QUARANTINE_INCORRECT_DATE_FORMAT"
@@ -40,6 +41,7 @@ var (
 
 	UploadFileContentReadError = models.Error{Code: UploadFileContentReadCode, Message: "Unable to read content of uploaded file"}
 	UploadFileFailureError     = models.Error{Code: UploadFileFailureCode, Message: "Unable to upload file"}
+	DownloadFileFailureError     = models.Error{Code: DownloadFileFailureCode, Message: "Unable to download file"}
 
 	DOBIncorrectFormatError            = models.Error{Code: DOBIncorrectFormatCode, Message: "DOB is not in correct format"}
 	QuarantineDateIncorrectFormatError = models.Error{Code: QuarantineDateIncorrectFormatCode, Message: "Quarantine started date is in not in correct format"}

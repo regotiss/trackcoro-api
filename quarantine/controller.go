@@ -1,10 +1,12 @@
 package quarantine
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"trackcoro/constants"
 	models2 "trackcoro/models"
 	"trackcoro/utils"
@@ -16,6 +18,7 @@ type Controller interface {
 	GetProfileDetails(ctx *gin.Context)
 	GetRemainingDays(ctx *gin.Context)
 	UploadPhoto(ctx *gin.Context)
+	DownloadPhoto(ctx *gin.Context)
 	UpdateCurrentLocation(ctx *gin.Context)
 	UpdateDeviceTokenId(ctx *gin.Context)
 	NotifySO(ctx *gin.Context)
@@ -123,6 +126,24 @@ func (c controller) GetRemainingDays(ctx *gin.Context) {
 	daysStatusResponse, err := c.service.GetDaysStatus(utils.GetMobileNumber(ctx))
 
 	utils.HandleResponse(ctx, err, daysStatusResponse, getStatusCode)
+}
+
+func (c controller) DownloadPhoto(ctx  *gin.Context) {
+	content, err := c.service.DownloadPhoto(utils.GetMobileNumber(ctx))
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
+	}
+	_, writeErr := ctx.Writer.Write(content)
+	if writeErr != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, &constants.InternalError)
+		return
+	}
+	ctx.Header("Content-Type", http.DetectContentType(content))
+	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%v.jpg;", utils.GetMobileNumber(ctx)))
+	ctx.Header("Content-Length", strconv.Itoa(len(content)))
+	ctx.Status(http.StatusOK)
 }
 
 func getStatusCode(err *models2.Error) int {

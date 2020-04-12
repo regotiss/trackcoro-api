@@ -50,6 +50,7 @@ func GetObject(key string) ([]byte, error) {
 		Key:    aws.String(key),
 	})
 	if err != nil {
+		logrus.Error("Could not download image: ", err)
 		return nil, err
 	}
 	defer object.Body.Close()

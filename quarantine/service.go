@@ -20,6 +20,7 @@ type Service interface {
 	GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, *models2.Error)
 	GetDetails(mobileNumber string) (models2.QuarantineDetails, *models2.Error)
 	UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error
+	DownloadPhoto(mobileNumber string) ([]byte, *models2.Error)
 	UpdateCurrentLocation(mobileNumber, currentLocationLat, currentLocationLng string) *models2.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
 	NotifySO(request models2.NotificationRequest, mobileNumber string) *models2.Error
@@ -60,7 +61,6 @@ func (s service) GetDaysStatus(mobileNumber string) (models.DaysStatusResponse, 
 
 func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSize int64, contentType string) *models2.Error {
 	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
-	logrus.Info("file name ", photoName)
 	photoContent := make([]byte, photoSize)
 
 	logrus.Info("Reading content of file")
@@ -74,10 +74,18 @@ func (s service) UploadPhoto(mobileNumber string, photo multipart.File, photoSiz
 	_, err = objectstorage.PutObject(photoName, photoContent, contentType)
 
 	if err != nil {
-		logrus.Error("Could not upload file ", err)
 		return &constants.UploadFileFailureError
 	}
 	return nil
+}
+
+func (s service) DownloadPhoto(mobileNumber string) ([]byte, *models2.Error) {
+	photoName := fmt.Sprintf("%s.jpg", mobileNumber)
+	content, err := objectstorage.GetObject(photoName)
+	if err != nil {
+		return nil, &constants.DownloadFileFailureError
+	}
+	return content, nil
 }
 
 func (s service) GetDetails(mobileNumber string) (models2.QuarantineDetails, *models2.Error) {
