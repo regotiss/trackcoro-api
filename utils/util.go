@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"trackcoro/config"
 	"trackcoro/constants"
@@ -11,7 +12,7 @@ import (
 	"trackcoro/token"
 )
 
-func AddTokenInHeader(ctx *gin.Context, mobileNumber string, role string) {
+func addTokenInHeader(ctx *gin.Context, mobileNumber string, role string) {
 	tokenBody := token.UserInfo{MobileNumber: mobileNumber, Role: role}
 	generatedToken, generatedTime, err := token.GenerateToken(tokenBody)
 	if err != nil {
@@ -58,6 +59,12 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 		soDetails = &models2.SODetails{MobileNumber: quarantine.SupervisingOfficer.MobileNumber,
 			Name: quarantine.SupervisingOfficer.Name}
 	}
+	isPhotoUploaded := true
+	photoUpload := quarantine.PhotoUpload
+	if photoUpload != nil {
+		isPhotoUploaded = photoUpload.UploadedOn.After(photoUpload.RequestedOn) &&
+			photoUpload.UploadedOn.Sub(photoUpload.RequestedOn).Minutes() <= constants.PhotoUploadThreshold
+	}
 	photoURL := fmt.Sprintf("%s/%s", config.Config.FileServerURL, quarantine.MobileNumber)
 	return models2.QuarantineDetails{
 		MobileNumber:           quarantine.MobileNumber,
@@ -73,6 +80,7 @@ func GetMappedQuarantine(quarantine models.Quarantine) models2.QuarantineDetails
 		SecondaryContactNumber: quarantine.SecondaryContactNumber,
 		SODetails:              soDetails,
 		PhotoURL:               photoURL,
+		IsPhotoUploaded:        isPhotoUploaded,
 	}
 }
 
@@ -115,6 +123,25 @@ func mapFromDBTravelHistory(quarantineTravelHistory []models.QuarantineTravelHis
 		})
 	}
 	return travelHistory
+}
+
+func VerifyHandler(role string, verifyService func(string) bool) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		var verifyRequest models2.VerifyRequest
+		bindError := ctx.ShouldBind(&verifyRequest)
+		if bindError != nil {
+			logrus.Error("Request bind body failed", bindError)
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
+			return
+		}
+
+		isRegistered := verifyService(verifyRequest.MobileNumber)
+
+		if isRegistered {
+			addTokenInHeader(ctx, verifyRequest.MobileNumber, role)
+		}
+		ctx.JSON(http.StatusOK, models2.VerifyResponse{IsRegistered: isRegistered})
+	}
 }
 
 func HandleResponse(ctx *gin.Context, err *models2.Error, response interface{}, errorHandler func(error2 *models2.Error) int) {

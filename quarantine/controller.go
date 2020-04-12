@@ -29,20 +29,7 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	var verifyRequest models2.VerifyRequest
-	bindError := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
-	if bindError != nil {
-		logrus.Error("Request bind body failed", bindError)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
-		return
-	}
-
-	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-
-	if isRegistered {
-		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.QuarantineRole)
-	}
-	ctx.JSON(http.StatusOK, models2.VerifyResponse{IsRegistered: isRegistered})
+	utils.VerifyHandler(constants.QuarantineRole, c.service.Verify)(ctx)
 }
 
 func (c controller) SaveProfileDetails(ctx *gin.Context) {

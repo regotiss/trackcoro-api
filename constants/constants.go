@@ -1,25 +1,26 @@
 package constants
 
-var (
+const (
 	DBConnectionString = "DB_CONNECTION"
-	FirebaseKey = "FIREBASE_PRIVATE_KEY"
-	FileServerURL = "FILE_SERVER_URL"
+	FirebaseKey        = "FIREBASE_PRIVATE_KEY"
+	FileServerURL      = "FILE_SERVER_URL"
 	AdminMobileNumber  = "ADMIN_MOBILE_NUMBER"
 )
 
-var (
-	Empty              = ""
-	Authorization      = "Authorization"
-	MobileNumber       = "MobileNumber"
-	DetailsTimeFormat  = "2006-01-02"
-	MobileNumberLength = 10
+const (
+	Empty                = ""
+	Authorization        = "Authorization"
+	MobileNumber         = "MobileNumber"
+	DetailsTimeFormat    = "2006-01-02"
+	PhotoUploadThreshold = 15
 )
 
-var (
+const (
 	AdminRole      = "admin"
 	QuarantineRole = "quarantine"
 	SORole         = "supervising_officer"
 )
-var (
-	EnvVariableNotFoundError         = "environment variable not found"
+
+const (
+	EnvVariableNotFoundError = "environment variable not found"
 )

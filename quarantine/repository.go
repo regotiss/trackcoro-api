@@ -103,7 +103,17 @@ func (r repository) SaveUploadDetails(mobileNumber string) *models2.Error {
 	if err != nil {
 		return &constants.QuarantineNotExistsError
 	}
-	dbError := r.db.Create(&models.PhotoUpload{QuarantineID: user.ID, UploadedOn: time.Now()}).Error
+	photoUpload := models.PhotoUpload{QuarantineID: user.ID}
+	dbError := r.db.Where(photoUpload).First(&photoUpload).Error
+	if dbError != nil {
+		photoUpload.UploadedOn = time.Now()
+		dbError := r.db.Create(photoUpload).Error
+		if dbError != nil {
+			return &constants.InternalError
+		}
+	}
+	photoUpload.UploadedOn = time.Now()
+	dbError = r.db.Update(&photoUpload).Error
 	if dbError != nil {
 		return &constants.InternalError
 	}

@@ -3,6 +3,7 @@ package so
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
+	"time"
 	"trackcoro/constants"
 	"trackcoro/database/models"
 	models2 "trackcoro/models"
@@ -16,6 +17,7 @@ type Repository interface {
 	GetQuarantine(soMobileNumber string, quarantineMobileNumber string) (*models.Quarantine, *models2.Error)
 	DeleteQuarantine(soMobileNumber string, quarantineMobileNumber string) *models2.Error
 	UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *models2.Error
+	SaveUploadDetails(quarantineMobileNumber string) *models2.Error
 }
 
 type repository struct {
@@ -53,7 +55,7 @@ func (r repository) GetQuarantine(soMobileNumber string, quarantineMobileNumber 
 	if err != nil {
 		return nil, err
 	}
-	r.db.Preload("Address").Preload("TravelHistory").Where(&quarantine).First(&quarantine)
+	r.db.Preload("Address").Preload("TravelHistory").Preload("PhotoUpload").Where(&quarantine).First(&quarantine)
 	return quarantine, nil
 }
 
@@ -80,6 +82,28 @@ func (r repository) UpdateDeviceTokenId(mobileNumber, deviceTokenId string) *mod
 	dbError := r.db.Model(&user).Update(userWithTokenId).Error
 	if dbError != nil {
 		logrus.Error("Could not save device token id ", dbError)
+		return &constants.InternalError
+	}
+	return nil
+}
+
+func (r repository) SaveUploadDetails(mobileNumber string) *models2.Error {
+	user, err := utils.GetQuarantineBy(r.db, mobileNumber)
+	if err != nil {
+		return &constants.QuarantineNotExistsError
+	}
+	photoUpload := models.PhotoUpload{QuarantineID: user.ID}
+	dbError := r.db.Where(photoUpload).First(&photoUpload).Error
+	if dbError != nil {
+		photoUpload.RequestedOn = time.Now()
+		dbError := r.db.Create(&photoUpload).Error
+		if dbError != nil {
+			return &constants.InternalError
+		}
+	}
+	photoUpload.RequestedOn = time.Now()
+	dbError = r.db.Update(&photoUpload).Error
+	if dbError != nil {
 		return &constants.InternalError
 	}
 	return nil

@@ -2,7 +2,6 @@ package admin
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"trackcoro/admin/models"
@@ -27,20 +26,7 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	var verifyRequest models2.VerifyRequest
-	bindError := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
-	if bindError != nil {
-		logrus.Error("Request bind body failed", bindError)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
-		return
-	}
-
-	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-
-	if isRegistered {
-		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.AdminRole)
-	}
-	ctx.JSON(http.StatusOK, models2.VerifyResponse{IsRegistered: isRegistered})
+	utils.VerifyHandler(constants.AdminRole, c.service.Verify)(ctx)
 }
 
 func (c controller) Add(ctx *gin.Context) {

@@ -27,25 +27,12 @@ type controller struct {
 }
 
 func (c controller) Verify(ctx *gin.Context) {
-	var verifyRequest models2.VerifyRequest
-	bindError := ctx.ShouldBindBodyWith(&verifyRequest, binding.JSON)
-	if bindError != nil {
-		logrus.Error("Request bind body failed", bindError)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
-		return
-	}
-
-	isRegistered := c.service.Verify(verifyRequest.MobileNumber)
-
-	if isRegistered {
-		utils.AddTokenInHeader(ctx, verifyRequest.MobileNumber, constants.SORole)
-	}
-	ctx.JSON(http.StatusOK, models2.VerifyResponse{IsRegistered: isRegistered})
+	utils.VerifyHandler(constants.SORole, c.service.Verify)(ctx)
 }
 
 func (c controller) AddQuarantine(ctx *gin.Context) {
 	var addQuarantineRequest models.QuarantineRequest
-	bindError := ctx.ShouldBindBodyWith(&addQuarantineRequest, binding.JSON)
+	bindError := ctx.ShouldBind(&addQuarantineRequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
@@ -65,7 +52,7 @@ func (c controller) GetQuarantines(ctx *gin.Context) {
 
 func (c controller) GetQuarantine(ctx *gin.Context) {
 	var getQuarantineRequest models.QuarantineRequest
-	bindError := ctx.ShouldBindBodyWith(&getQuarantineRequest, binding.JSON)
+	bindError := ctx.ShouldBind(&getQuarantineRequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
@@ -79,7 +66,7 @@ func (c controller) GetQuarantine(ctx *gin.Context) {
 
 func (c controller) DeleteQuarantine(ctx *gin.Context) {
 	var removeQuarantineRequest models.QuarantineRequest
-	bindError := ctx.ShouldBindBodyWith(&removeQuarantineRequest, binding.JSON)
+	bindError := ctx.ShouldBind(&removeQuarantineRequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)

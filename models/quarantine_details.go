@@ -16,4 +16,5 @@ type QuarantineDetails struct {
 	PhotoURL               string          `json:"photo_url,omitempty"`
 	CurrentLocation        *Coordinates    `json:"current_location,omitempty"`
 	SODetails              *SODetails      `json:"supervising_officer,omitempty"`
+	IsPhotoUploaded        bool            `json:"isPhotoUploaded"`
 }

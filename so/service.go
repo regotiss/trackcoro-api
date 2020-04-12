@@ -72,7 +72,11 @@ func (s service) NotifyQuarantine(request models1.NotifyQuarantine, soMobileNumb
 		return err
 	}
 	deviceTokenIds := []string{quarantine.DeviceTokenId}
-	return sendNotification(soMobileNumber, deviceTokenIds,request.Type, request.Message)
+	notifyErr := sendNotification(soMobileNumber, deviceTokenIds, request.Type, request.Message)
+	if notifyErr != nil {
+		return notifyErr
+	}
+	return s.repository.SaveUploadDetails(quarantine.MobileNumber)
 }
 
 func sendNotification(soMobileNumber string, deviceTokenIds []string, msgType string, msg string) *models.Error {

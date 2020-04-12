@@ -23,5 +23,5 @@ type Quarantine struct {
 	CurrentLocationLongitude string
 	SupervisingOfficer       *SupervisingOfficer
 	SupervisingOfficerID     uint
-	PhotoUploads             []*PhotoUpload
+	PhotoUpload             *PhotoUpload
 }
