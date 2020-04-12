@@ -8,11 +8,12 @@ const (
 )
 
 const (
-	Empty                = ""
-	Authorization        = "Authorization"
-	MobileNumber         = "MobileNumber"
-	DetailsTimeFormat    = "2006-01-02"
-	PhotoUploadThreshold = 15
+	Empty                   = ""
+	Authorization           = "Authorization"
+	MobileNumber            = "MobileNumber"
+	DetailsTimeFormat       = "2006-01-02"
+	PhotoUploadThreshold    = 15
+	UploadRequestNotifyType = "UPLOAD_REQUEST"
 )
 
 const (

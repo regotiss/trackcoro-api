@@ -76,7 +76,10 @@ func (s service) NotifyQuarantine(request models1.NotifyQuarantine, soMobileNumb
 	if notifyErr != nil {
 		return notifyErr
 	}
-	return s.repository.SaveUploadDetails(quarantine.MobileNumber)
+	if request.Type == constants.UploadRequestNotifyType {
+		return s.repository.SaveUploadDetails(quarantine.MobileNumber)
+	}
+	return nil
 }
 
 func sendNotification(soMobileNumber string, deviceTokenIds []string, msgType string, msg string) *models.Error {
