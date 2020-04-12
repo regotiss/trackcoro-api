@@ -142,7 +142,9 @@ func (c controller) DownloadPhoto(ctx *gin.Context) {
 	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%v.jpg;", utils.GetMobileNumber(ctx)))
 	logrus.Info("length: ", len(content))
 	ctx.Header("Content-Length", strconv.Itoa(len(content)))
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Success",
+	})
 }
 
 func getStatusCode(err *models2.Error) int {

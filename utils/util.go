@@ -127,5 +127,7 @@ func HandleResponse(ctx *gin.Context, err *models2.Error, response interface{}, 
 		ctx.JSON(code, response)
 		return
 	}
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Success",
+	})
 }

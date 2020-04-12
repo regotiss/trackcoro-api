@@ -50,7 +50,7 @@ func (c controller) Add(ctx *gin.Context) {
 
 func (c controller) AddSO(ctx *gin.Context) {
 	var addSORequest models2.SODetails
-	bindError := ctx.ShouldBindBodyWith(&addSORequest, binding.JSON)
+	bindError := ctx.ShouldBind(&addSORequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed ", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
@@ -69,7 +69,7 @@ func (c controller) GetSOs(ctx *gin.Context) {
 
 func (c controller) GetQuarantines(ctx *gin.Context) {
 	var quarantinesRequest models.GetQuarantinesRequest
-	bindError := ctx.ShouldBindBodyWith(&quarantinesRequest, binding.JSON)
+	bindError := ctx.ShouldBind(&quarantinesRequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed ", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
@@ -82,7 +82,7 @@ func (c controller) GetQuarantines(ctx *gin.Context) {
 
 func (c controller) DeleteSO(ctx *gin.Context) {
 	var deleteSORequest models.GetQuarantinesRequest
-	bindError := ctx.ShouldBindBodyWith(&deleteSORequest, binding.JSON)
+	bindError := ctx.ShouldBind(&deleteSORequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed ", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)
@@ -96,7 +96,7 @@ func (c controller) DeleteSO(ctx *gin.Context) {
 
 func (c controller) ReplaceSO(ctx *gin.Context) {
 	var replaceSORequest models.ReplaceSORequest
-	bindError := ctx.ShouldBindBodyWith(&replaceSORequest, binding.JSON)
+	bindError := ctx.ShouldBind(&replaceSORequest)
 	if bindError != nil {
 		logrus.Error("Request bind body failed ", bindError)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, &constants.BadRequestError)

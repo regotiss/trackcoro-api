@@ -12,6 +12,7 @@ var (
 	Authorization      = "Authorization"
 	MobileNumber       = "MobileNumber"
 	DetailsTimeFormat  = "2006-01-02"
+	MobileNumberLength = 10
 )
 
 var (
